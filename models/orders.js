@@ -33,6 +33,15 @@ const Orders = new Schema({
   marketer: { type: String },
   deliveryPrice: { type: String },
   situation: { type: String },
+  situationSteps: {
+    type: [
+      {
+        situation: { type: String },
+        date: { type: String },
+        time: { type: String },
+      },
+    ],
+  },
   time: { type: String },
   date: { type: String },
 });

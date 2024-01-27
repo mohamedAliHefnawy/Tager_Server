@@ -139,15 +139,18 @@ route.post("/editProduct", async (req, res) => {
       rows,
     } = req.body;
 
-    const flatImageURLs = imageURLs.flatMap((outerArray) =>
-      outerArray.flatMap((innerArray) => innerArray)
-    );
+    console.log(rows);
 
-    const product = await ProductsModel.findOne({ _id: idProductt });
+    const flatImageURLs = imageURLs.flatMap((outerArray) => outerArray);
+
     const newSizeProduct1 = sizeProduct.map((sizeProduct) => ({
       size: sizeProduct.size,
       // amount: 0,
     }));
+
+    console.log("name:", flatImageURLs);
+    const product = await ProductsModel.findOne({ _id: idProductt });
+    // console.log("Product Found:", product);
 
     product.name = nameProduct;
     product.image = flatImageURLs;
@@ -156,7 +159,7 @@ route.post("/editProduct", async (req, res) => {
     product.price2 = priceProduct2;
     product.price3 = priceProduct3;
     product.color = colorProductMain;
-    product.size = newSizeProduct1
+    product.size = newSizeProduct1;
     product.products = rows.map((row) => ({
       name: nameProduct,
       catogry: selectedCategory,
@@ -173,11 +176,13 @@ route.post("/editProduct", async (req, res) => {
 
     const save1 = await product.save();
     if (save1) {
+      console.log(1);
       return res.status(200).send("yes");
     }
   } catch (error) {
     return res.status(500).send("no");
   }
 });
+
 
 module.exports = route;

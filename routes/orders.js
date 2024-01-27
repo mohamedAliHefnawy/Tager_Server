@@ -73,6 +73,12 @@ route.post("/addOrder", async (req, res) => {
       time: new Date().toLocaleTimeString(),
     });
 
+    order.situationSteps.push({
+      situation: "بإنتظار الموافقة",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
     await order.save();
     return res.status(200).send("yes");
   } catch (error) {
@@ -122,7 +128,11 @@ route.post("/addOrderProducts", async (req, res) => {
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
-
+    order.situationSteps.push({
+      situation: "بإنتظار الموافقة",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
     await order.save();
     return res.status(200).send("yes");
   } catch (error) {
@@ -131,31 +141,32 @@ route.post("/addOrderProducts", async (req, res) => {
   }
 });
 
-// route.post("/editCatgory", async (req, res) => {
-//   try {
-//     const { idCategoryy, nameCatogry, imageURL, active } = req.body;
+route.post("/editOrder", async (req, res) => {
+  try {
+    const { idOrder, situationOrder } = req.body;
 
-//     const catgory = await CategoriesModel.findOne({ _id: idCategoryy });
+    const order = await OrdersModel.findOne({ _id: idOrder });
+    const latestSituation = situationOrder[situationOrder.length - 1].situation;
+    const index = order.situationSteps.findIndex(
+      (step) => step.situation === latestSituation
+    );
 
-//     catgory.name = nameCatogry;
-//     catgory.image = imageURL;
-//     catgory.active = active;
+    order.situation = latestSituation;
+    if (index !== -1) {
+      order.situationSteps.splice(index, 1);
+    } else {
+      order.situationSteps.push({
+        situation: latestSituation,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      });
+    }
 
-//     await catgory.save();
-//     return res.status(200).send("yes");
-//   } catch (error) {
-//     return res.status(500).send("no");
-//   }
-// });
-
-// route.delete("/deleteemployee/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     await EmployeesModel.findByIdAndDelete(id);
-//     res.json("yes");
-//   } catch (error) {
-//     res.status(500).json("no");
-//   }
-// });
+    await order.save();
+    return res.status(200).send("yes");
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
 
 module.exports = route;

@@ -15,6 +15,7 @@ route.get("/getpayment", async (req, res) => {
   }
 });
 
+
 route.get("/getpayment/:id", async (req, res) => {
   const paymentId = req.params.id;
   try {
@@ -73,6 +74,8 @@ route.post("/convertMoney", async (req, res) => {
   try {
     const { nameFrom, nameTo, money, employee } = req.body;
 
+    console.log(employee);
+
     const paymentTo = await PaymentModel.findOne({ name: nameTo });
     if (!paymentTo) {
       return res.status(404).send("Target payment not found");
@@ -122,7 +125,6 @@ route.post("/addpayment/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { num, notes, person, date, time } = req.body;
-
     const payment = await PaymentModel.findOne({ _id: id });
 
     payment.money.push({
