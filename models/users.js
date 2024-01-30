@@ -7,13 +7,19 @@ const Users = new Schema({
   image: {
     type: String,
   },
-  phone: {
+  phone1: {
+    type: String,
+  },
+  phone2: {
     type: String,
   },
   password: {
     type: String,
   },
   validity: {
+    type: String,
+  },
+  nameCompany: {
     type: String,
   },
 });

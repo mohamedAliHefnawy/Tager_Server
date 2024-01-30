@@ -17,21 +17,17 @@ route.get("/getUsers", async (req, res) => {
   }
 });
 
-// route.get("/getemployee/:id", async (req, res) => {
-//   const employeeName = req.params.id;
-
-//   try {
-//     const employee = await EmployeesModel.findOne({ name: employeeName });
-//     if (employee) {
-//       res.json(employee);
-//     } else {
-//       res.status(404).json({ message: "لا يوجد مستخدم بهذا الاسم" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "حدث خطأ أثناء جلب بيانات الموظف" });
-//   }
-// });
+route.get("/getUser/:id", async (req, res) => {
+  const userName = req.params.id;
+  try {
+    const user = await UsersModel.findOne({ name: userName }).maxTimeMS(20000);
+    const token = jwt.sign({ user }, config.secretKey);
+    res.json({ token, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;

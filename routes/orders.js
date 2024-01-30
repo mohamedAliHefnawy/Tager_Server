@@ -155,17 +155,31 @@ route.post("/editOrder", async (req, res) => {
       gainMarketer,
     } = req.body;
 
+    function extractLinks(arr) {
+      let links = [];
+      if (Array.isArray(arr)) {
+        arr.forEach((item) => {
+          if (Array.isArray(item)) {
+            links = links.concat(extractLinks(item));
+          } else {
+            links.push(item);
+          }
+        });
+      }
+
+      return links;
+    }
+    const allLinks = extractLinks(produtss.map((item) => item.imageProduct));
+
     const order = await OrdersModel.findOne({ _id: id });
     const dataProducts = produtss.map((product) => ({
       idProduct: product.idProduct,
       nameProduct: product.nameProduct,
-      imageProduct: product.imageProduct,
-      amount: amount[product.idProduct] || 0,
+      imageProduct: allLinks[0],
+      amount: +amount[product.idProduct] || 0,
       price: product.price || 0,
-      size: product.size,
+      size: product.size || "",
     }));
-
-    console.log(dataProducts);
 
     order.nameClient = nameClient;
     order.phone1Client = phone1Client;
@@ -174,6 +188,23 @@ route.post("/editOrder", async (req, res) => {
     order.products = dataProducts;
     order.totalPriceProducts = totalPriceProducts;
     order.gainMarketer = gainMarketer;
+
+    await order.save();
+    return res.status(200).send("yes");
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+
+route.post("/editOrderSituation", async (req, res) => {
+  try {
+    const { idOrder, situationOrder } = req.body;
+
+    console.log(idOrder, situationOrder);
+
+    const order = await OrdersModel.findOne({ _id: idOrder });
+
+    order.situationSteps = situationOrder;
 
     await order.save();
     return res.status(200).send("yes");

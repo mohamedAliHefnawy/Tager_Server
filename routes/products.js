@@ -143,8 +143,6 @@ route.post("/editProduct", async (req, res) => {
       rows,
     } = req.body;
 
-    console.log(rows);
-
     const flatImageURLs = imageURLs.flatMap((outerArray) => outerArray);
 
     const newSizeProduct1 = sizeProduct.map((sizeProduct) => ({
