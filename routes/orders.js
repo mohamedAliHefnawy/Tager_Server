@@ -18,7 +18,6 @@ route.get("/getOrders", async (req, res) => {
 
 route.get("/getOrder/:id", async (req, res) => {
   const orderId = req.params.id;
-
   try {
     const order = await OrdersModel.findById(orderId).maxTimeMS(20000);
     const token = jwt.sign({ order }, config.secretKey);
@@ -143,24 +142,38 @@ route.post("/addOrderProducts", async (req, res) => {
 
 route.post("/editOrder", async (req, res) => {
   try {
-    const { idOrder, situationOrder } = req.body;
+    const {
+      id,
+      nameClient,
+      phone1Client,
+      phone2Client,
+      store,
+      address,
+      produtss,
+      amount,
+      totalPriceProducts,
+      gainMarketer,
+    } = req.body;
 
-    const order = await OrdersModel.findOne({ _id: idOrder });
-    const latestSituation = situationOrder[situationOrder.length - 1].situation;
-    const index = order.situationSteps.findIndex(
-      (step) => step.situation === latestSituation
-    );
+    const order = await OrdersModel.findOne({ _id: id });
+    const dataProducts = produtss.map((product) => ({
+      idProduct: product.idProduct,
+      nameProduct: product.nameProduct,
+      imageProduct: product.imageProduct,
+      amount: amount[product.idProduct] || 0,
+      price: product.price || 0,
+      size: product.size,
+    }));
 
-    order.situation = latestSituation;
-    if (index !== -1) {
-      order.situationSteps.splice(index, 1);
-    } else {
-      order.situationSteps.push({
-        situation: latestSituation,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
-    }
+    console.log(dataProducts);
+
+    order.nameClient = nameClient;
+    order.phone1Client = phone1Client;
+    order.phone2Client = phone2Client;
+    order.address = address;
+    order.products = dataProducts;
+    order.totalPriceProducts = totalPriceProducts;
+    order.gainMarketer = gainMarketer;
 
     await order.save();
     return res.status(200).send("yes");

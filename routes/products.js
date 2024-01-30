@@ -55,6 +55,7 @@ route.post("/addProduct", async (req, res) => {
       priceProduct1,
       priceProduct2,
       priceProduct3,
+      priceProduct4,
       colorProductMain,
       sizeProduct,
       rows,
@@ -86,6 +87,7 @@ route.post("/addProduct", async (req, res) => {
       price1: priceProduct1,
       price2: priceProduct2,
       price3: priceProduct3,
+      gainMarketer: priceProduct4,
       color: colorProductMain,
       size: newSizeProduct1,
       products: rows.map((row) => ({
@@ -95,6 +97,7 @@ route.post("/addProduct", async (req, res) => {
         price1: +row.cost,
         price2: +row.marketer,
         price3: +row.regularCustomer,
+        gainMarketer: +row.gainMarketer,
         color: row.color,
         size: row.dynamicInputs.map((sizeValue) => ({
           size: sizeValue,
@@ -134,6 +137,7 @@ route.post("/editProduct", async (req, res) => {
       priceProduct1,
       priceProduct2,
       priceProduct3,
+      priceProduct4,
       colorProductMain,
       sizeProduct,
       rows,
@@ -158,6 +162,7 @@ route.post("/editProduct", async (req, res) => {
     product.price1 = priceProduct1;
     product.price2 = priceProduct2;
     product.price3 = priceProduct3;
+    product.gainMarketer = priceProduct4;
     product.color = colorProductMain;
     product.size = newSizeProduct1;
     product.products = rows.map((row) => ({
@@ -167,6 +172,7 @@ route.post("/editProduct", async (req, res) => {
       price1: +row.cost,
       price2: +row.marketer,
       price3: +row.regularCustomer,
+      gainMarketer: +row.gainMarketer,
       color: row.color,
       size: row.dynamicInputs.map((sizeValue) => ({
         size: sizeValue,
@@ -183,6 +189,5 @@ route.post("/editProduct", async (req, res) => {
     return res.status(500).send("no");
   }
 });
-
 
 module.exports = route;

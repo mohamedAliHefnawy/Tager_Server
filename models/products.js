@@ -22,6 +22,9 @@ const Products = new Schema({
   price3: {
     type: Number,
   },
+  gainMarketer: {
+    type: Number,
+  },
   color: {
     type: String,
   },
@@ -63,6 +66,9 @@ const Products = new Schema({
           type: Number,
         },
         price3: {
+          type: Number,
+        },
+        gainMarketer: {
           type: Number,
         },
         color: {
