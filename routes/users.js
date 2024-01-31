@@ -63,9 +63,14 @@ route.post("/signUp", async (req, res) => {
   const hashedPassword = await bcyrbt.hash(password, saltRounds);
   const newUser = new UsersModel({
     name: name,
+    image: "",
     phone: phone,
     password: hashedPassword,
     validity: "زبون عادي",
+    nameCompany: "",
+    phoneCompany: "",
+    imageCompany: "",
+    colorCompany: "",
   });
 
   const save = await newUser.save();
@@ -76,10 +81,59 @@ route.post("/signUp", async (req, res) => {
   return res.status(500).send("error");
 });
 
+route.post("/editUser", async (req, res) => {
+  try {
+    const {
+      imageURLMarketr,
+      name,
+      newName,
+      password,
+      passwordNew,
+      phoneMarketer,
+      nameCompany,
+      phoneCompany,
+      color,
+      imageURLCompany,
+    } = req.body;
+
+    console.log(name, newName);
+
+    const existingUser = await UsersModel.findOne({ name: newName });
+
+    if (existingUser) {
+      return res.status(200).send("no");
+    } else {
+      const user = await UsersModel.findOne({ name: name });
+      if (user) {
+        const comparePassword = await bcyrbt.compare(password, user.password);
+        if (!comparePassword) {
+          return res.send("noPaswordCom");
+        } else {
+          const hashedPassword = await bcyrbt.hash(passwordNew, saltRounds);
+          user.name = newName;
+          user.image = imageURLMarketr;
+          user.phone = phoneMarketer;
+          user.password = hashedPassword;
+          user.nameCompany = nameCompany;
+          user.phoneCompany = phoneCompany;
+          user.imageCompany = imageURLCompany;
+          user.colorCompany = color;
+          const save = await user.save();
+          if (save) {
+            return res.status(200).send("yes");
+          }
+        }
+      } else {
+        console.log("المستخدم غير موجود بالفعل.");
+      }
+    }
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+
 route.post("/addemployee", async (req, res) => {
   const { name, phone, imageURL, password, selectedValue } = req.body;
-
-  console.log(name, phone, imageURL, password, selectedValue);
 
   const employee = await UsersModel.findOne({ name: name });
   if (employee) {

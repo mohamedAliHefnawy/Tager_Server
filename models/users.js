@@ -7,10 +7,7 @@ const Users = new Schema({
   image: {
     type: String,
   },
-  phone1: {
-    type: String,
-  },
-  phone2: {
+  phone: {
     type: String,
   },
   password: {
@@ -20,6 +17,15 @@ const Users = new Schema({
     type: String,
   },
   nameCompany: {
+    type: String,
+  },
+  phoneCompany: {
+    type: String,
+  },
+  imageCompany: {
+    type: String,
+  },
+  colorCompany: {
     type: String,
   },
 });
