@@ -42,20 +42,42 @@ route.post("/addOrder", async (req, res) => {
       imageProduct,
       amount,
       price,
+      phoneCompany,
+      nameCompany,
+      imageURLCompany,
+      color,
       totalPriceProducts,
       gainMarketer,
       marketer,
       deliveryPrice,
     } = req.body;
 
+    function extractLinks(arr) {
+      let links = [];
+      if (Array.isArray(arr)) {
+        arr.forEach((item) => {
+          if (Array.isArray(item)) {
+            links = links.concat(extractLinks(item));
+          } else {
+            links.push(item);
+          }
+        });
+      }
+
+      return links;
+    }
+    const allLinks = extractLinks(imageProduct);
+    // console.log(allLinks[0]);
+
     const DataProducts = {
       idProduct: idProduct,
       nameProduct: nameProduct,
-      imageProduct: imageProduct[0],
+      imageProduct: allLinks[0],
       amount: amount,
       price: price,
       size: sizeProduct,
     };
+
     const order = new OrdersModel({
       nameClient: nameClient,
       phone1Client: phone1Client,
@@ -68,6 +90,10 @@ route.post("/addOrder", async (req, res) => {
       marketer: marketer,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
+      PhoneCompany: phoneCompany,
+      NameCompany: nameCompany,
+      ImageURLCompany: imageURLCompany,
+      ColorCompany: color,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
@@ -96,6 +122,10 @@ route.post("/addOrderProducts", async (req, res) => {
       address,
       products,
       sizes,
+      phoneCompany,
+      nameCompany,
+      imageURLCompany,
+      color,
       amountAndPrice,
       totalPriceProducts,
       gainMarketer,
@@ -103,10 +133,26 @@ route.post("/addOrderProducts", async (req, res) => {
       deliveryPrice,
     } = req.body;
 
+    function extractLinks(arr) {
+      let links = [];
+      if (Array.isArray(arr)) {
+        arr.forEach((item) => {
+          if (Array.isArray(item)) {
+            links = links.concat(extractLinks(item));
+          } else {
+            links.push(item);
+          }
+        });
+      }
+
+      return links;
+    }
+    const allLinks = extractLinks(products.map((image) => image.image));
+
     const dataProducts = products.map((product) => ({
       idProduct: product._id,
       nameProduct: product.name,
-      imageProduct: product.image[0],
+      imageProduct: allLinks[0],
       amount: amountAndPrice[product._id]?.quantity || 0,
       price: amountAndPrice[product._id]?.price || 0,
       size: sizes.find((item2) => item2[0] === product._id)?.[1],
@@ -122,6 +168,10 @@ route.post("/addOrderProducts", async (req, res) => {
       totalPriceProducts: totalPriceProducts,
       gainMarketer: gainMarketer,
       marketer: marketer,
+      PhoneCompany: phoneCompany,
+      NameCompany: nameCompany,
+      ImageURLCompany: imageURLCompany,
+      ColorCompany: color,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
       date: new Date().toLocaleDateString(),
@@ -199,8 +249,6 @@ route.post("/editOrder", async (req, res) => {
 route.post("/editOrderSituation", async (req, res) => {
   try {
     const { idOrder, situationOrder } = req.body;
-
-    console.log(idOrder, situationOrder);
 
     const order = await OrdersModel.findOne({ _id: idOrder });
 

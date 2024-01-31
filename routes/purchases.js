@@ -22,8 +22,6 @@ route.get("/getPurchases", async (req, res) => {
 route.get("/getpurchase/:id", async (req, res) => {
   const purchaseName = req.params.id;
 
-  console.log(purchaseName);
-
   try {
     const purchase = await PurchasesModel.findOne({ name: purchaseName });
     if (!purchase) {

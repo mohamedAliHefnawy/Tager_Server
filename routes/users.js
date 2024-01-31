@@ -96,35 +96,32 @@ route.post("/editUser", async (req, res) => {
       imageURLCompany,
     } = req.body;
 
-    console.log(name, newName);
+    // const existingUser = await UsersModel.findOne({ name: newName });
 
-    const existingUser = await UsersModel.findOne({ name: newName });
+    // if (existingUser) {
+    //   return res.status(200).send("no");
+    // }
 
-    if (existingUser) {
-      return res.status(200).send("no");
-    } else {
-      const user = await UsersModel.findOne({ name: name });
-      if (user) {
-        const comparePassword = await bcyrbt.compare(password, user.password);
-        if (!comparePassword) {
-          return res.send("noPaswordCom");
-        } else {
-          const hashedPassword = await bcyrbt.hash(passwordNew, saltRounds);
-          user.name = newName;
-          user.image = imageURLMarketr;
-          user.phone = phoneMarketer;
-          user.password = hashedPassword;
-          user.nameCompany = nameCompany;
-          user.phoneCompany = phoneCompany;
-          user.imageCompany = imageURLCompany;
-          user.colorCompany = color;
-          const save = await user.save();
-          if (save) {
-            return res.status(200).send("yes");
-          }
-        }
+    // else {
+    const user = await UsersModel.findOne({ name: name });
+    if (user) {
+      const comparePassword = await bcyrbt.compare(password, user.password);
+      if (!comparePassword) {
+        return res.send("noPaswordCom");
       } else {
-        console.log("المستخدم غير موجود بالفعل.");
+        const hashedPassword = await bcyrbt.hash(passwordNew, saltRounds);
+        // user.name = newName;
+        user.image = imageURLMarketr;
+        user.phone = phoneMarketer;
+        user.password = hashedPassword;
+        user.nameCompany = nameCompany;
+        user.phoneCompany = phoneCompany;
+        user.imageCompany = imageURLCompany;
+        user.colorCompany = color;
+        const save = await user.save();
+        if (save) {
+          return res.status(200).send("yes");
+        }
       }
     }
   } catch (error) {

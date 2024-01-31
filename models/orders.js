@@ -31,6 +31,10 @@ const Orders = new Schema({
   totalPriceProducts: { type: Number },
   gainMarketer: { type: Number },
   marketer: { type: String },
+  PhoneCompany: { type: String },
+  NameCompany: { type: String },
+  ImageURLCompany: { type: String },
+  ColorCompany: { type: String },
   deliveryPrice: { type: String },
   situation: { type: String },
   situationSteps: {
