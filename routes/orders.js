@@ -274,14 +274,20 @@ route.post("/editOrderSituation", async (req, res) => {
 
 route.post("/chatOrder", async (req, res) => {
   try {
-    const { idOrder, text, val, admin } = req.body;
-
-    console.log(idOrder, text, val);
+    const { idOrder, text, val, admin, marketer } = req.body;
 
     const order = await OrdersModel.findOne({ _id: idOrder });
     if (val === "أدمن") {
       order.chatMessages[0].admin.push({
         person: admin,
+        message: text,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      });
+    }
+    if (val === "مندوب تسويق") {
+      order.chatMessages[0].marketer.push({
+        person: marketer,
         message: text,
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),

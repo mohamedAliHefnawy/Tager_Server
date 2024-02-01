@@ -64,6 +64,7 @@ const Orders = new Schema({
             {
               message: { type: String },
               date: { type: String },
+              person: { type: String },
               time: { type: String },
             },
           ],
@@ -73,6 +74,7 @@ const Orders = new Schema({
             {
               message: { type: String },
               date: { type: String },
+              person: { type: String },
               time: { type: String },
             },
           ],
