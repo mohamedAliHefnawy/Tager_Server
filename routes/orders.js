@@ -67,7 +67,6 @@ route.post("/addOrder", async (req, res) => {
       return links;
     }
     const allLinks = extractLinks(imageProduct);
-    // console.log(allLinks[0]);
 
     const DataProducts = {
       idProduct: idProduct,
@@ -90,6 +89,13 @@ route.post("/addOrder", async (req, res) => {
       marketer: marketer,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
+      chatMessages: [
+        {
+          admin: [],
+          marketer: [],
+          delivery: [],
+        },
+      ],
       PhoneCompany: phoneCompany,
       NameCompany: nameCompany,
       ImageURLCompany: imageURLCompany,
@@ -174,6 +180,13 @@ route.post("/addOrderProducts", async (req, res) => {
       ColorCompany: color,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
+      chatMessages: [
+        {
+          admin: [],
+          marketer: [],
+          delivery: [],
+        },
+      ],
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
@@ -249,9 +262,7 @@ route.post("/editOrder", async (req, res) => {
 route.post("/editOrderSituation", async (req, res) => {
   try {
     const { idOrder, situationOrder } = req.body;
-
     const order = await OrdersModel.findOne({ _id: idOrder });
-
     order.situationSteps = situationOrder;
 
     await order.save();
@@ -261,4 +272,26 @@ route.post("/editOrderSituation", async (req, res) => {
   }
 });
 
+route.post("/chatOrder", async (req, res) => {
+  try {
+    const { idOrder, text, val, admin } = req.body;
+
+    console.log(idOrder, text, val);
+
+    const order = await OrdersModel.findOne({ _id: idOrder });
+    if (val === "أدمن") {
+      order.chatMessages[0].admin.push({
+        person: admin,
+        message: text,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      });
+    }
+
+    await order.save();
+    return res.status(200).send("yes");
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
 module.exports = route;

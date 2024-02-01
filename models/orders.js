@@ -46,6 +46,40 @@ const Orders = new Schema({
       },
     ],
   },
+  chatMessages: {
+    type: [
+      {
+        admin: {
+          type: [
+            {
+              message: { type: String },
+              person: { type: String },
+              date: { type: String },
+              time: { type: String },
+            },
+          ],
+        },
+        marketer: {
+          type: [
+            {
+              message: { type: String },
+              date: { type: String },
+              time: { type: String },
+            },
+          ],
+        },
+        delivery: {
+          type: [
+            {
+              message: { type: String },
+              date: { type: String },
+              time: { type: String },
+            },
+          ],
+        },
+      },
+    ],
+  },
   time: { type: String },
   date: { type: String },
 });

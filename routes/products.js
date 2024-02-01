@@ -144,15 +144,27 @@ route.post("/editProduct", async (req, res) => {
     } = req.body;
 
     const flatImageURLs = imageURLs.flatMap((outerArray) => outerArray);
+    function extractLinks(arr) {
+      let links = [];
+      if (Array.isArray(arr)) {
+        arr.forEach((item) => {
+          if (Array.isArray(item)) {
+            links = links.concat(extractLinks(item));
+          } else {
+            links.push(item);
+          }
+        });
+      }
 
+      return links;
+    }
+    const allLinks = extractLinks(rows.map((image) => image.images));
     const newSizeProduct1 = sizeProduct.map((sizeProduct) => ({
       size: sizeProduct.size,
       // amount: 0,
     }));
 
-    console.log("name:", flatImageURLs);
     const product = await ProductsModel.findOne({ _id: idProductt });
-    // console.log("Product Found:", product);
 
     product.name = nameProduct;
     product.image = flatImageURLs;
@@ -166,7 +178,7 @@ route.post("/editProduct", async (req, res) => {
     product.products = rows.map((row) => ({
       name: nameProduct,
       catogry: selectedCategory,
-      image: row.images,
+      image: extractLinks(row.images),
       price1: +row.cost,
       price2: +row.marketer,
       price3: +row.regularCustomer,
