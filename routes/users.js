@@ -37,7 +37,6 @@ route.post("/login", async (req, res) => {
     if (!user) {
       return res.send("notFoundUser");
     }
-
     const comparePassword = await bcyrbt.compare(password, user.password);
     if (!comparePassword) {
       return res.send("no");

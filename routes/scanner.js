@@ -5,73 +5,70 @@ const route = express.Router();
 const bcyrbt = require("bcrypt");
 const saltRounds = 10;
 const UsersModel = require("../models/users");
+const OrdersModel = require("../models/orders");
 
-route.get("/getUsers", async (req, res) => {
+route.get("/getOrder/:id", async (req, res) => {
+  const orderId = req.params.id;
+  // const { deliveryName } = req.body;
+
+  console.log(orderId);
   try {
-    const users = await UsersModel.find().maxTimeMS(20000);
-    const token = jwt.sign({ users }, config.secretKey);
-    res.json({ token, users });
+    const order = await OrdersModel.findById(orderId).maxTimeMS(20000);
+    const token = jwt.sign({ order }, config.secretKey);
+    res.json({ token, order });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
 
-route.get("/getUser/:id", async (req, res) => {
-  const userName = req.params.id;
+route.get("/getOrders/:id", async (req, res) => {
+  const deliveryName = req.params.id;
   try {
-    const user = await UsersModel.findOne({ name: userName }).maxTimeMS(20000);
-    const token = jwt.sign({ user }, config.secretKey);
-    res.json({ token, user });
+    const delivery = await UsersModel.findOne({ name: deliveryName }).maxTimeMS(
+      20000
+    );
+    if (!delivery) {
+      return res.status(404).send("delivery not found");
+    }
+    const ordersIds = delivery.orders.flatMap((product) => product);
+    const ordersData = await OrdersModel.find({ _id: { $in: ordersIds } });
+    const token = jwt.sign({ ordersData }, config.secretKey);
+
+    res.json({ token, ordersData });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
-
 
 route.post("/addOrderWithDelivery", async (req, res) => {
   const { deliveryName, idOrder } = req.body;
 
-  console.log(deliveryName, idOrder);
+  const delivery = await UsersModel.findOne({ name: deliveryName });
+  const order = await OrdersModel.findById(idOrder).maxTimeMS(20000);
 
+  if (!delivery) {
+    return res.send("no");
+  }
+  const isIdOrderExists = delivery.orders.includes(idOrder);
+  if (isIdOrderExists) {
+    return res.send("idOrder already exists");
+  }
+  delivery.orders.push(idOrder);
+  order.situationSteps.push({
+    situation: "مع الشحن",
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
+  });
 
-  // const  delivery = await UsersModel.findOne({ name: name });
-  // if (!delivery) {
-  //   return res.send("no");
-  // }
-
-  // const newEmployee = new UsersModel({
-  //   name: name,
-  //   phone: phone,
-  //   password: password,
-  //   image: imageURL,
-  //   validity: selectedValue,
-  // });
-
-  // const save = await newEmployee.save();
-  // if (save) {
-  //   return res.send("yes");
-  // }
+  const save = await delivery.save();
+  const save2 = await order.save();
+  if (save && save2) {
+    return res.send("yes");
+  }
   console.error(error);
   return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
-});
-
-route.post("/editemployee", async (req, res) => {
-  try {
-    const { id, name, phone, password, selectedValueValidity } = req.body;
-    const employee = await UsersModel.findById(id);
-
-    employee.name = name;
-    employee.phone = phone;
-    employee.password = password;
-    employee.validity = selectedValueValidity;
-
-    await employee.save();
-    return res.status(200).send("yes");
-  } catch (error) {
-    return res.status(500).send("no");
-  }
 });
 
 module.exports = route;

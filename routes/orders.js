@@ -264,7 +264,6 @@ route.post("/editOrderSituation", async (req, res) => {
     const { idOrder, situationOrder } = req.body;
     const order = await OrdersModel.findOne({ _id: idOrder });
     order.situationSteps = situationOrder;
-
     await order.save();
     return res.status(200).send("yes");
   } catch (error) {

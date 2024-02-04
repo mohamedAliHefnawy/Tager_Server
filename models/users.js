@@ -16,6 +16,9 @@ const Users = new Schema({
   orders: {
     type: [],
   },
+  money: {
+    type: Number,
+  },
   validity: {
     type: String,
   },
