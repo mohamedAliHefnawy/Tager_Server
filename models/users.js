@@ -13,6 +13,9 @@ const Users = new Schema({
   password: {
     type: String,
   },
+  orders: {
+    type: [],
+  },
   validity: {
     type: String,
   },
