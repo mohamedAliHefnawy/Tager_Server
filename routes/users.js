@@ -5,6 +5,7 @@ const route = express.Router();
 const bcyrbt = require("bcrypt");
 const saltRounds = 10;
 const UsersModel = require("../models/users");
+const NotificationsModel = require("../models/notifications");
 
 route.get("/getUsers", async (req, res) => {
   try {
@@ -147,7 +148,7 @@ route.post("/editemployee", async (req, res) => {
     const { id, name, phone, password, selectedValueValidity } = req.body;
     const employee = await UsersModel.findById(id);
     const hashedPassword = await bcyrbt.hash(password, saltRounds);
-   
+
     employee.phone = phone;
     employee.password = hashedPassword;
     employee.validity = selectedValueValidity;
@@ -160,17 +161,53 @@ route.post("/editemployee", async (req, res) => {
 
 route.post("/acceptMoney", async (req, res) => {
   try {
-    const { nameDelivery, nameAdmin } = req.body;
+    const { id, nameDelivery, nameAdmin, money } = req.body;
 
-    console.log(nameDelivery, nameAdmin);
-    // const employee = await UsersModel.findById(id);
-    // const hashedPassword = await bcyrbt.hash(password, saltRounds);
-    // employee.name = name;
-    // employee.phone = phone;
-    // employee.password = hashedPassword;
-    // employee.validity = selectedValueValidity;
-    // await employee.save();
-    // return res.status(200).send("yes");
+    console.log(nameDelivery, nameAdmin, money);
+
+    const notification = await NotificationsModel.findOneAndDelete({
+      _id: id,
+    });
+    const delivery = await UsersModel.findOne({ name: nameDelivery });
+    const admin = await UsersModel.findOne({ name: nameAdmin });
+
+    delivery.money.push({
+      money: -money,
+      notes: "الأدمن قد إستلم الأموال",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: false,
+    });
+
+    admin.money.push({
+      money: money,
+      notes: "من خلال إستلام الأموال من مندوب التوصيل",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: false,
+    });
+
+    const save1 = await delivery.save();
+    const save2 = await admin.save();
+
+    if (notification && save1 && save2) {
+      return res.status(200).send("yes");
+    }
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+route.post("/declineMoney", async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const notification = await NotificationsModel.findOneAndDelete({
+      _id: id,
+    });
+
+    if (notification) {
+      return res.status(200).send("yes");
+    }
   } catch (error) {
     return res.status(500).send("no");
   }
