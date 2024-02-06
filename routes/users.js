@@ -31,7 +31,6 @@ route.get("/getUser/:id", async (req, res) => {
 
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
-  console.log(name, password);
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
@@ -95,13 +94,6 @@ route.post("/editUser", async (req, res) => {
       imageURLCompany,
     } = req.body;
 
-    // const existingUser = await UsersModel.findOne({ name: newName });
-
-    // if (existingUser) {
-    //   return res.status(200).send("no");
-    // }
-
-    // else {
     const user = await UsersModel.findOne({ name: name });
     if (user) {
       const comparePassword = await bcyrbt.compare(password, user.password);
@@ -109,7 +101,6 @@ route.post("/editUser", async (req, res) => {
         return res.send("noPaswordCom");
       } else {
         const hashedPassword = await bcyrbt.hash(passwordNew, saltRounds);
-        // user.name = newName;
         user.image = imageURLMarketr;
         user.phone = phoneMarketer;
         user.password = hashedPassword;
@@ -130,16 +121,15 @@ route.post("/editUser", async (req, res) => {
 
 route.post("/addemployee", async (req, res) => {
   const { name, phone, imageURL, password, selectedValue } = req.body;
-
   const employee = await UsersModel.findOne({ name: name });
   if (employee) {
     return res.send("no");
   }
-
+  const hashedPassword = await bcyrbt.hash(password, saltRounds);
   const newEmployee = new UsersModel({
     name: name,
     phone: phone,
-    password: password,
+    password: hashedPassword,
     image: imageURL,
     validity: selectedValue,
   });
@@ -156,14 +146,31 @@ route.post("/editemployee", async (req, res) => {
   try {
     const { id, name, phone, password, selectedValueValidity } = req.body;
     const employee = await UsersModel.findById(id);
-
-    employee.name = name;
+    const hashedPassword = await bcyrbt.hash(password, saltRounds);
+   
     employee.phone = phone;
-    employee.password = password;
+    employee.password = hashedPassword;
     employee.validity = selectedValueValidity;
-
     await employee.save();
     return res.status(200).send("yes");
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+
+route.post("/acceptMoney", async (req, res) => {
+  try {
+    const { nameDelivery, nameAdmin } = req.body;
+
+    console.log(nameDelivery, nameAdmin);
+    // const employee = await UsersModel.findById(id);
+    // const hashedPassword = await bcyrbt.hash(password, saltRounds);
+    // employee.name = name;
+    // employee.phone = phone;
+    // employee.password = hashedPassword;
+    // employee.validity = selectedValueValidity;
+    // await employee.save();
+    // return res.status(200).send("yes");
   } catch (error) {
     return res.status(500).send("no");
   }

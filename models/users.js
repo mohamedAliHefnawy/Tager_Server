@@ -17,7 +17,15 @@ const Users = new Schema({
     type: [],
   },
   money: {
-    type: Number,
+    type: [
+      {
+        money: { type: Number },
+        notes: { type: String },
+        date: { type: String },
+        time: { type: String },
+        acceptMoney: { type: Boolean },
+      },
+    ],
   },
   validity: {
     type: String,

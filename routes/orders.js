@@ -4,6 +4,7 @@ const config = require("../config");
 const route = express.Router();
 const OrdersModel = require("../models/orders");
 const ProductsModel = require("../models/products");
+const UsersModel = require("../models/users");
 
 route.get("/getOrders", async (req, res) => {
   try {
@@ -262,6 +263,7 @@ route.post("/editOrder", async (req, res) => {
 route.post("/editOrderSituation", async (req, res) => {
   try {
     const { idOrder, situationOrder } = req.body;
+
     const order = await OrdersModel.findOne({ _id: idOrder });
     order.situationSteps = situationOrder;
     await order.save();
@@ -271,10 +273,39 @@ route.post("/editOrderSituation", async (req, res) => {
   }
 });
 
+route.post("/editOrderSituation2", async (req, res) => {
+  try {
+    const { delivery, idOrder, situationOrder, orderMoney } = req.body;
+    console.log(orderMoney, delivery);
+
+    const order = await OrdersModel.findOne({ _id: idOrder });
+    const nameDelivery = await UsersModel.findOne({ name: delivery });
+    order.situationSteps.push({
+      situation: situationOrder,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+    nameDelivery.money.push({
+      money: orderMoney,
+      notes: "",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: false,
+    });
+    const save1 = await order.save();
+    const save2 = await nameDelivery.save();
+
+    if (save1 && save2) {
+      return res.status(200).send("yes");
+    }
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+
 route.post("/chatOrder", async (req, res) => {
   try {
-    const { idOrder, text, val, admin, marketer } = req.body;
-
+    const { idOrder, text, val, admin, marketer, delivery } = req.body;
     const order = await OrdersModel.findOne({ _id: idOrder });
     if (val === "أدمن") {
       order.chatMessages[0].admin.push({
@@ -287,6 +318,14 @@ route.post("/chatOrder", async (req, res) => {
     if (val === "مندوب تسويق") {
       order.chatMessages[0].marketer.push({
         person: marketer,
+        message: text,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      });
+    }
+    if (val === "مندوب توصيل") {
+      order.chatMessages[0].delivery.push({
+        person: delivery,
         message: text,
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
