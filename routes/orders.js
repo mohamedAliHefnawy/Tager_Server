@@ -293,7 +293,6 @@ route.post("/editOrderSituation2", async (req, res) => {
       address,
     } = req.body;
 
-
     const order = await OrdersModel.findOne({ _id: idOrder });
     const nameDelivery = await UsersModel.findOne({ name: delivery });
 
@@ -318,16 +317,15 @@ route.post("/editOrderSituation2", async (req, res) => {
         time: new Date().toLocaleTimeString(),
       });
 
-      products.forEach((item) => {
-        nameDelivery.productsStore.push({
-          idProduct: item.idProduct,
-          nameProduct: item.nameProduct,
-          imageProduct: item.imageProduct,
-          amount: item.amount,
-          price: item.price,
-          size: item.size,
-        });
-      });
+      const productsToAdd = products.map((item) => ({
+        idProduct: item.idProduct,
+        nameProduct: item.nameProduct,
+        imageProduct: item.imageProduct,
+        amount: item.amount,
+        price: item.price,
+        size: item.size,
+      }));
+      nameDelivery.productsStore.push(...productsToAdd);
 
       const newNotification = new NotificationsModel({
         person: delivery,
@@ -336,23 +334,23 @@ route.post("/editOrderSituation2", async (req, res) => {
         time: time,
         notes: notes,
       });
-      // const newReturns = new ReturnsModel({
-      //   person: delivery,
-      //   nameClient: nameClient,
-      //   phone1Client: phone1Client,
-      //   phone2Client: phone2Client,
-      //   address: address,
-      //   date: date,
-      //   time: time,
-      //   products: products.map((item) => ({
-      //     idProduct: item.idProduct,
-      //     nameProduct: item.nameProduct,
-      //     imageProduct: item.imageProduct,
-      //     amount: item.amount,
-      //     price: item.price,
-      //     size: item.size,
-      //   })),
-      // });
+      const newReturns = new ReturnsModel({
+        person: delivery,
+        nameClient: nameClient,
+        phone1Client: phone1Client,
+        phone2Client: phone2Client,
+        address: address,
+        date: date,
+        time: time,
+        products: products.map((item) => ({
+          idProduct: item.idProduct,
+          nameProduct: item.nameProduct,
+          imageProduct: item.imageProduct,
+          amount: item.amount,
+          price: item.price,
+          size: item.size,
+        })),
+      });
       await newNotification.save();
       await newReturns.save();
     }
