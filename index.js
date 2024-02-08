@@ -18,6 +18,7 @@ const cart = require("./routes/cart");
 const favourite = require("./routes/favourite");
 const scanner = require("./routes/scanner");
 const notifications = require("./routes/notifications");
+const returns = require("./routes/returns");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -39,6 +40,7 @@ app.use("/cart", cart);
 app.use("/favourite", favourite);
 app.use("/scanner", scanner);
 app.use("/notifications", notifications);
+app.use("/returns", returns);
 
 app.get("/", function (req, res) {
   res.send("Server is online");

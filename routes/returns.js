@@ -5,26 +5,13 @@ const route = express.Router();
 const OrdersModel = require("../models/orders");
 const ProductsModel = require("../models/products");
 const UsersModel = require("../models/users");
-const NotificationsModel = require("../models/notifications");
 const ReturnsModel = require("../models/returns");
 
-route.get("/getOrders", async (req, res) => {
+route.get("/getReturns", async (req, res) => {
   try {
-    const orders = await OrdersModel.find().maxTimeMS(20000);
-    const token = jwt.sign({ orders }, config.secretKey);
-    res.json({ token, orders });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-route.get("/getOrder/:id", async (req, res) => {
-  const orderId = req.params.id;
-  try {
-    const order = await OrdersModel.findById(orderId).maxTimeMS(20000);
-    const token = jwt.sign({ order }, config.secretKey);
-    res.json({ token, order });
+    const returns = await ReturnsModel.find().maxTimeMS(20000);
+    const token = jwt.sign({ returns }, config.secretKey);
+    res.json({ token, returns });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -277,85 +264,22 @@ route.post("/editOrderSituation", async (req, res) => {
 
 route.post("/editOrderSituation2", async (req, res) => {
   try {
-    const {
-      delivery,
-      idOrder,
-      situationOrder,
-      orderMoney,
-      message,
-      date,
-      time,
-      notes,
-      products,
-      nameClient,
-      phone1Client,
-      phone2Client,
-      address,
-    } = req.body;
-
+    const { delivery, idOrder, situationOrder, orderMoney } = req.body;
 
     const order = await OrdersModel.findOne({ _id: idOrder });
     const nameDelivery = await UsersModel.findOne({ name: delivery });
-
-    if (situationOrder === "تم التوصيل") {
-      order.situationSteps.push({
-        situation: situationOrder,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
-      nameDelivery.money.push({
-        money: orderMoney,
-        notes: "",
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        acceptMoney: false,
-      });
-    }
-    if (situationOrder === "تم الإسترجاع") {
-      order.situationSteps.push({
-        situation: situationOrder,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
-
-      products.forEach((item) => {
-        nameDelivery.productsStore.push({
-          idProduct: item.idProduct,
-          nameProduct: item.nameProduct,
-          imageProduct: item.imageProduct,
-          amount: item.amount,
-          price: item.price,
-          size: item.size,
-        });
-      });
-
-      const newNotification = new NotificationsModel({
-        person: delivery,
-        message: message,
-        date: date,
-        time: time,
-        notes: notes,
-      });
-      // const newReturns = new ReturnsModel({
-      //   person: delivery,
-      //   nameClient: nameClient,
-      //   phone1Client: phone1Client,
-      //   phone2Client: phone2Client,
-      //   address: address,
-      //   date: date,
-      //   time: time,
-      //   products: products.map((item) => ({
-      //     idProduct: item.idProduct,
-      //     nameProduct: item.nameProduct,
-      //     imageProduct: item.imageProduct,
-      //     amount: item.amount,
-      //     price: item.price,
-      //     size: item.size,
-      //   })),
-      // });
-      await newNotification.save();
-      await newReturns.save();
-    }
+    order.situationSteps.push({
+      situation: situationOrder,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+    nameDelivery.money.push({
+      money: orderMoney,
+      notes: "",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: false,
+    });
     const save1 = await order.save();
     const save2 = await nameDelivery.save();
 

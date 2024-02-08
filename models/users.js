@@ -16,6 +16,18 @@ const Users = new Schema({
   orders: {
     type: [],
   },
+  productsStore: {
+    type: [
+      {
+        idProduct: { type: String },
+        nameProduct: { type: String },
+        imageProduct: { type: String },
+        amount: { type: Number },
+        price: { type: Number },
+        size: { type: String },
+      },
+    ],
+  },
   money: {
     type: [
       {
