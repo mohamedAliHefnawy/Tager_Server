@@ -51,14 +51,13 @@ route.post("/addOrder", async (req, res) => {
       color,
       totalPriceProducts,
       gainMarketer,
+      gainAdmin,
       marketer,
       deliveryPrice,
     } = req.body;
 
     const product = await ProductsModel.findOne({ _id: idProduct });
     const nameMarketer = await UsersModel.findOne({ name: marketer });
-
-    console.log(nameMarketer);
 
     nameMarketer.money.push({
       money: gainMarketer,
@@ -150,6 +149,7 @@ route.post("/addOrder", async (req, res) => {
       products: [DataProducts],
       totalPriceProducts: totalPriceProducts,
       gainMarketer: gainMarketer,
+      gainAdmin: gainAdmin,
       marketer: marketer,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
@@ -200,9 +200,83 @@ route.post("/addOrderProducts", async (req, res) => {
       amountAndPrice,
       totalPriceProducts,
       gainMarketer,
+      gainAdmin,
       marketer,
       deliveryPrice,
     } = req.body;
+
+    // const product = await ProductsModel.findOne({ _id: idProduct });
+    const nameMarketer = await UsersModel.findOne({ name: marketer });
+
+    // console.log(store, sizes, amountAndPrice);
+    const targetSize = "128GB"; // حجم المستهدف
+
+    for (const [productId, { quantity }] of Object.entries(amountAndPrice)) {
+      const product = await ProductsModel.findById(productId);
+
+      console.log(productId, product);
+
+      if (product) {
+        const newSize = product.size.map((sizeItem) => {
+          if (sizeItem.size === targetSize) {
+            const storeToUpdate = sizeItem.store.find(
+              (storeItem) => storeItem.nameStore === store
+            );
+
+            if (storeToUpdate) {
+              storeToUpdate.quantity -= parseInt(quantity, 10);
+            }
+          }
+
+          return sizeItem;
+        });
+
+        await ProductsModel.findByIdAndUpdate(
+          productId,
+          { size: newSize },
+          { new: true }
+        );
+      } else {
+        const product2 = await ProductsModel.findOne({
+          "products._id": productId,
+        });
+
+        if (product2) {
+          const productToUpdate = product2.products.find(
+            (item) => item._id.toString() === productId
+          );
+
+          const newSize = productToUpdate.size.map((sizeItem) => {
+            if (sizeItem.size === targetSize) {
+              const storeToUpdate = sizeItem.store.find(
+                (storeItem) => storeItem.nameStore === store
+              );
+
+              if (storeToUpdate) {
+                storeToUpdate.quantity -= parseInt(quantity, 10);
+              }
+            }
+
+            return sizeItem;
+          });
+
+          await ProductsModel.updateOne(
+            { "products._id": productId },
+            { $set: { "products.$.size": newSize } }
+          );
+        } else {
+          console.log("المنتج غير موجود");
+        }
+      }
+    }
+
+    // nameMarketer.money.push({
+    //   money: gainMarketer,
+    //   notes: "",
+    //   date: new Date().toLocaleDateString(),
+    //   time: new Date().toLocaleTimeString(),
+    //   acceptMoney: false,
+    // });
 
     function extractLinks(arr) {
       let links = [];
@@ -238,6 +312,7 @@ route.post("/addOrderProducts", async (req, res) => {
       products: dataProducts,
       totalPriceProducts: totalPriceProducts,
       gainMarketer: gainMarketer,
+      gainAdmin: gainAdmin,
       marketer: marketer,
       PhoneCompany: phoneCompany,
       NameCompany: nameCompany,
@@ -261,6 +336,7 @@ route.post("/addOrderProducts", async (req, res) => {
       time: new Date().toLocaleTimeString(),
     });
     await order.save();
+    await nameMarketer.save();
     return res.status(200).send("yes");
   } catch (error) {
     console.error(error);
