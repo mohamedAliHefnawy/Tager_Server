@@ -55,6 +55,67 @@ route.post("/addOrder", async (req, res) => {
       deliveryPrice,
     } = req.body;
 
+    const product = await ProductsModel.findOne({ _id: idProduct });
+    const nameMarketer = await UsersModel.findOne({ name: marketer });
+
+    console.log(nameMarketer);
+
+    nameMarketer.money.push({
+      money: gainMarketer,
+      notes: "",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: false,
+    });
+
+    if (product) {
+      const newSize = product.size.map((sizeItem) => {
+        if (sizeItem.size === sizeProduct) {
+          const newStore = sizeItem.store.map((storeItem) => {
+            if (storeItem.nameStore === store) {
+              storeItem.amount -= amount;
+            }
+            return storeItem;
+          });
+          return { ...sizeItem, store: newStore };
+        }
+        return sizeItem;
+      });
+      await ProductsModel.findByIdAndUpdate(
+        idProduct,
+        { size: newSize },
+        { new: true }
+      );
+    } else {
+      const product2 = await ProductsModel.findOne({
+        "products._id": idProduct,
+      });
+      if (product2) {
+        const productToUpdate = product2.products.filter(
+          (item) => item._id.toString() === idProduct
+        );
+
+        const newSize = productToUpdate[0].size.map((sizeItem) => {
+          if (sizeItem.size === sizeProduct) {
+            const newStore = sizeItem.store.map((storeItem) => {
+              if (storeItem.nameStore === store) {
+                storeItem.amount -= amount;
+              }
+              return storeItem;
+            });
+            return { ...sizeItem, store: newStore };
+          }
+          return sizeItem;
+        });
+        await ProductsModel.updateOne(
+          { "products._id": idProduct },
+          { $set: { "products.$.size": newSize } }
+        );
+      } else {
+        console.log(2);
+      }
+    }
+
     function extractLinks(arr) {
       let links = [];
       if (Array.isArray(arr)) {
@@ -114,6 +175,7 @@ route.post("/addOrder", async (req, res) => {
     });
 
     await order.save();
+    await nameMarketer.save();
     return res.status(200).send("yes");
   } catch (error) {
     console.error(error);
@@ -287,11 +349,24 @@ route.post("/editOrderSituation2", async (req, res) => {
       time,
       notes,
       products,
+      returnOrders,
       nameClient,
       phone1Client,
       phone2Client,
       address,
     } = req.body;
+
+    const productsNotInReturnOrders = products.filter(
+      (product) =>
+        !returnOrders.some(
+          (orderItem) => orderItem.idProduct === product.idProduct
+        )
+    );
+
+    const totalPrice = productsNotInReturnOrders.reduce(
+      (calc, alt) => calc + alt.price * alt.amount,
+      0
+    );
 
     const order = await OrdersModel.findOne({ _id: idOrder });
     const nameDelivery = await UsersModel.findOne({ name: delivery });
@@ -335,14 +410,53 @@ route.post("/editOrderSituation2", async (req, res) => {
         notes: notes,
       });
       const newReturns = new ReturnsModel({
+        products: products.map((item) => ({
+          idProduct: item.idProduct,
+          nameProduct: item.nameProduct,
+          imageProduct: item.imageProduct,
+          amount: item.amount,
+          price: item.price,
+          size: item.size,
+        })),
+      });
+      await newNotification.save();
+      await newReturns.save();
+    }
+    if (situationOrder === "إسترجاع جزئي") {
+      nameDelivery.money.push({
+        money: totalPrice,
+        notes: "",
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        acceptMoney: false,
+      });
+
+      order.situationSteps.push({
+        situation: situationOrder,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      });
+
+      const productsToAdd = returnOrders.map((item) => ({
+        idProduct: item.idProduct,
+        nameProduct: item.nameProduct,
+        imageProduct: item.imageProduct,
+        amount: item.amount,
+        price: item.price,
+        size: item.size,
+      }));
+      nameDelivery.productsStore.push(...productsToAdd);
+
+      const newNotification = new NotificationsModel({
         person: delivery,
-        nameClient: nameClient,
-        phone1Client: phone1Client,
-        phone2Client: phone2Client,
-        address: address,
+        message: message,
         date: date,
         time: time,
-        products: products.map((item) => ({
+        notes: notes,
+      });
+
+      const newReturns = new ReturnsModel({
+        products: returnOrders.map((item) => ({
           idProduct: item.idProduct,
           nameProduct: item.nameProduct,
           imageProduct: item.imageProduct,

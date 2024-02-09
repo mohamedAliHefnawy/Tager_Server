@@ -307,8 +307,6 @@ route.post("/paymentPurchases", async (req, res) => {
   try {
     const { id, Price, payment, employee, supplier } = req.body;
 
-    // console.log(id, Price, payment, employee, supplier);
-
     const purchase = await PurchasesModel.findOne({ _id: id });
     const Supplier = await SuppliersModel.findOne({ name: supplier });
     const money = await PaymentModel.findOne({ name: payment });

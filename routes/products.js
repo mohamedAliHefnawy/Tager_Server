@@ -158,7 +158,6 @@ route.post("/editProduct", async (req, res) => {
 
       return links;
     }
-    const allLinks = extractLinks(rows.map((image) => image.images));
     const newSizeProduct1 = sizeProduct.map((sizeProduct) => ({
       size: sizeProduct.size,
       // amount: 0,
