@@ -38,7 +38,9 @@ route.get("/getpurchase/:id", async (req, res) => {
 
 route.post("/addPurchases", async (req, res) => {
   try {
-    const { inputValues, supplier, moneySafe, ProductsName } = req.body;
+    const { inputValues, supplier, moneySafe, ProductsName , totalBuy } = req.body;
+
+    console.log(inputValues);
 
     for (const productId in inputValues) {
       const { selectedSize, selectedStore } = inputValues[productId];

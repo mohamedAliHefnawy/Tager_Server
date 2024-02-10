@@ -59,13 +59,13 @@ route.post("/addOrder", async (req, res) => {
     const product = await ProductsModel.findOne({ _id: idProduct });
     const nameMarketer = await UsersModel.findOne({ name: marketer });
 
-    nameMarketer.money.push({
-      money: gainMarketer,
-      notes: "",
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
-      acceptMoney: false,
-    });
+    // nameMarketer.money.push({
+    //   money: gainMarketer,
+    //   notes: "",
+    //   date: new Date().toLocaleDateString(),
+    //   time: new Date().toLocaleTimeString(),
+    //   acceptMoney: false,
+    // });
 
     if (product) {
       const newSize = product.size.map((sizeItem) => {
@@ -175,6 +175,9 @@ route.post("/addOrder", async (req, res) => {
     });
 
     await order.save();
+    if (order) {
+      nameMarketer.orders.push(order._id);
+    }
     await nameMarketer.save();
     return res.status(200).send("yes");
   } catch (error) {
@@ -205,26 +208,23 @@ route.post("/addOrderProducts", async (req, res) => {
       deliveryPrice,
     } = req.body;
 
-    // const product = await ProductsModel.findOne({ _id: idProduct });
     const nameMarketer = await UsersModel.findOne({ name: marketer });
-
-    // console.log(store, sizes, amountAndPrice);
-    const targetSize = "128GB"; // حجم المستهدف
 
     for (const [productId, { quantity }] of Object.entries(amountAndPrice)) {
       const product = await ProductsModel.findById(productId);
 
-      console.log(productId, product);
+      const sizeFound = sizes.find(([id]) => id === productId);
+      const [, size] = sizeFound;
 
       if (product) {
         const newSize = product.size.map((sizeItem) => {
-          if (sizeItem.size === targetSize) {
+          if (sizeItem.size === size) {
             const storeToUpdate = sizeItem.store.find(
               (storeItem) => storeItem.nameStore === store
             );
 
             if (storeToUpdate) {
-              storeToUpdate.quantity -= parseInt(quantity, 10);
+              storeToUpdate.amount -= parseInt(quantity, 10);
             }
           }
 
@@ -247,13 +247,13 @@ route.post("/addOrderProducts", async (req, res) => {
           );
 
           const newSize = productToUpdate.size.map((sizeItem) => {
-            if (sizeItem.size === targetSize) {
+            if (sizeItem.size === size) {
               const storeToUpdate = sizeItem.store.find(
                 (storeItem) => storeItem.nameStore === store
               );
 
               if (storeToUpdate) {
-                storeToUpdate.quantity -= parseInt(quantity, 10);
+                storeToUpdate.amount -= parseInt(quantity, 10);
               }
             }
 
@@ -335,6 +335,10 @@ route.post("/addOrderProducts", async (req, res) => {
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
+
+    if (order) {
+      nameMarketer.orders.push(order._id);
+    }
     await order.save();
     await nameMarketer.save();
     return res.status(200).send("yes");
@@ -404,6 +408,8 @@ route.post("/editOrderSituation", async (req, res) => {
   try {
     const { idOrder, situationOrder } = req.body;
 
+    console.log(situationOrder);
+
     const order = await OrdersModel.findOne({ _id: idOrder });
     order.situationSteps = situationOrder;
     await order.save();
@@ -417,6 +423,9 @@ route.post("/editOrderSituation2", async (req, res) => {
   try {
     const {
       delivery,
+      marketer,
+      gainMarketer,
+      gainAdmin,
       idOrder,
       situationOrder,
       orderMoney,
@@ -446,20 +455,55 @@ route.post("/editOrderSituation2", async (req, res) => {
 
     const order = await OrdersModel.findOne({ _id: idOrder });
     const nameDelivery = await UsersModel.findOne({ name: delivery });
+    const nameMarketer = await UsersModel.findOne({ name: marketer });
+    // const payment = await PaymentModel.findOne({ name: "فوادفون كاش" });
 
     if (situationOrder === "تم التوصيل") {
+      const newNotification = new NotificationsModel({
+        person: delivery,
+        marketer: marketer,
+        message: `يوجد طلبية قد وصلت من خلال مندوب التوصيل ${delivery}`,
+        date: date,
+        time: time,
+        notes: "لا يوجد ملاحظات",
+      });
+
       order.situationSteps.push({
         situation: situationOrder,
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
       });
+
       nameDelivery.money.push({
+        idOrder: idOrder,
         money: orderMoney,
+        notes: "",
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        acceptMoney: true,
+      });
+
+      nameMarketer.money.push({
+        money: +gainMarketer,
         notes: "",
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
         acceptMoney: false,
       });
+
+      await UsersModel.updateOne(
+        { name: delivery },
+        { $pull: { productsStore: idOrder } }
+      );
+      
+      // payment.money.push({
+      //   value: money.toString(),
+      //   notes: `من خلال تحويل فلوس طلبيات من ${delivery}`,
+      //   person: employee,
+      //   date: new Date().toLocaleDateString(),
+      //   time: new Date().toLocaleTimeString(),
+      // });
+      await newNotification.save();
     }
     if (situationOrder === "تم الإسترجاع") {
       order.situationSteps.push({
@@ -480,11 +524,12 @@ route.post("/editOrderSituation2", async (req, res) => {
 
       const newNotification = new NotificationsModel({
         person: delivery,
-        message: message,
+        message: ``,
         date: date,
         time: time,
         notes: notes,
       });
+
       const newReturns = new ReturnsModel({
         products: products.map((item) => ({
           idProduct: item.idProduct,
@@ -500,6 +545,7 @@ route.post("/editOrderSituation2", async (req, res) => {
     }
     if (situationOrder === "إسترجاع جزئي") {
       nameDelivery.money.push({
+        idOrder: idOrder,
         money: totalPrice,
         notes: "",
         date: new Date().toLocaleDateString(),
@@ -525,6 +571,7 @@ route.post("/editOrderSituation2", async (req, res) => {
 
       const newNotification = new NotificationsModel({
         person: delivery,
+        marketer: marketer,
         message: message,
         date: date,
         time: time,
@@ -546,8 +593,9 @@ route.post("/editOrderSituation2", async (req, res) => {
     }
     const save1 = await order.save();
     const save2 = await nameDelivery.save();
+    const save3 = await nameMarketer.save();
 
-    if (save1 && save2) {
+    if (save1 && save2 && save3) {
       return res.status(200).send("yes");
     }
   } catch (error) {

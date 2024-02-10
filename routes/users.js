@@ -6,6 +6,8 @@ const bcyrbt = require("bcrypt");
 const saltRounds = 10;
 const UsersModel = require("../models/users");
 const NotificationsModel = require("../models/notifications");
+const PaymentModel = require("../models/payment");
+const OrdersModel = require("../models/orders");
 
 route.get("/getUsers", async (req, res) => {
   try {
@@ -30,8 +32,26 @@ route.get("/getUser/:id", async (req, res) => {
   }
 });
 
+route.get("/getDeliveryProductStore/:id", async (req, res) => {
+  const deliveryId = req.params.id;
+  try {
+    const delivery = await UsersModel.findOne({ _id: deliveryId }).maxTimeMS(
+      20000
+    );
+    const ordersIds = delivery.productsStore.flatMap((product) => product);
+    const orders = await OrdersModel.find({ _id: { $in: ordersIds } });
+    const token = jwt.sign({ orders }, config.secretKey);
+    res.json({ token, orders });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
+
+  console.log(name, password);
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
@@ -163,32 +183,41 @@ route.post("/acceptMoney", async (req, res) => {
   try {
     const { id, nameDelivery, nameAdmin, money } = req.body;
 
-    console.log(nameDelivery, nameAdmin, money);
-
     const notification = await NotificationsModel.findOneAndDelete({
       _id: id,
     });
+
     const delivery = await UsersModel.findOne({ name: nameDelivery });
     const admin = await UsersModel.findOne({ name: nameAdmin });
+    const payment = await PaymentModel.findOne({ name: "فوادفون كاش" });
 
-    delivery.money.push({
-      money: -money,
-      notes: "الأدمن قد إستلم الأموال",
+    // delivery.money.push({
+    //   money: -money,
+    //   notes: "الأدمن قد إستلم الأموال",
+    //   date: new Date().toLocaleDateString(),
+    //   time: new Date().toLocaleTimeString(),
+    //   acceptMoney: false,
+    // });
+
+    // admin.money.push({
+    //   money: money,
+    //   notes: "من خلال إستلام الأموال من مندوب التوصيل",
+    //   date: new Date().toLocaleDateString(),
+    //   time: new Date().toLocaleTimeString(),
+    //   acceptMoney: true,
+    // });
+
+    payment.money.push({
+      value: money.toString(),
+      notes: `من خلال إستلام ${nameAdmin} فلوس طلبية `,
+      person: nameAdmin,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
-      acceptMoney: false,
-    });
-
-    admin.money.push({
-      money: money,
-      notes: "من خلال إستلام الأموال من مندوب التوصيل",
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
-      acceptMoney: false,
     });
 
     const save1 = await delivery.save();
     const save2 = await admin.save();
+    await payment.save();
 
     if (notification && save1 && save2) {
       return res.status(200).send("yes");
@@ -197,14 +226,27 @@ route.post("/acceptMoney", async (req, res) => {
     return res.status(500).send("no");
   }
 });
+
 route.post("/declineMoney", async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id, nameDelivery, nameAdmin, money } = req.body;
+
+    console.log(nameDelivery, nameAdmin, money);
 
     const notification = await NotificationsModel.findOneAndDelete({
       _id: id,
     });
+    const delivery = await UsersModel.findOne({ name: nameDelivery });
 
+    delivery.money.push({
+      money: money,
+      notes: ` الأدمن ${nameAdmin} قد رفض إستلام ${money} د.ل `,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: true,
+    });
+
+    await delivery.save();
     if (notification) {
       return res.status(200).send("yes");
     }

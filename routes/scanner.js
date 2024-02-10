@@ -42,6 +42,26 @@ route.get("/getOrders/:id", async (req, res) => {
   }
 });
 
+route.get("/getOrdersInStore/:id", async (req, res) => {
+  const deliveryName = req.params.id;
+  try {
+    const delivery = await UsersModel.findOne({ name: deliveryName }).maxTimeMS(
+      20000
+    );
+    if (!delivery) {
+      return res.status(404).send("delivery not found");
+    }
+    const ordersIds = delivery.productsStore.flatMap((product) => product);
+    const ordersInStore = await OrdersModel.find({ _id: { $in: ordersIds } });
+    const token = jwt.sign({ ordersInStore }, config.secretKey);
+
+    res.json({ token, ordersInStore });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 route.post("/addOrderWithDelivery", async (req, res) => {
   const { deliveryName, idOrder } = req.body;
 
@@ -56,6 +76,7 @@ route.post("/addOrderWithDelivery", async (req, res) => {
     return res.send("idOrder already exists");
   }
   delivery.orders.push(idOrder);
+  delivery.productsStore.push(idOrder);
   order.situationSteps.push({
     situation: "مع الشحن",
     date: new Date().toLocaleDateString(),

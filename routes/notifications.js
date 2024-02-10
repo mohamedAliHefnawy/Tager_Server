@@ -5,6 +5,7 @@ const route = express.Router();
 const bcyrbt = require("bcrypt");
 const saltRounds = 10;
 const NotificationsModel = require("../models/notifications");
+const UsersModel = require("../models/users");
 
 route.get("/getNotifications", async (req, res) => {
   try {
@@ -19,6 +20,15 @@ route.get("/getNotifications", async (req, res) => {
 
 route.post("/addNotification", async (req, res) => {
   const { message, date, time, notes, person } = req.body;
+
+  const nameDelivery = await UsersModel.findOne({ name: person });
+
+  await UsersModel.updateMany(
+    { "money._id": { $in: nameDelivery.money.map((item) => item._id) } },
+    { $set: { "money.$[].acceptMoney": false } }
+  );
+
+  // const updatedDelivery = await UsersModel.findOne({ name: person });
 
   const newNotification = new NotificationsModel({
     person: person,

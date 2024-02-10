@@ -55,9 +55,6 @@ route.post("/addpayment", async (req, res) => {
 route.post("/editpayment", async (req, res) => {
   try {
     const { id, name, active, image } = req.body;
-
-    console.log(image);
-
     const payment = await PaymentModel.findOne({ _id: id });
     payment.name = name;
     payment.active = active;
