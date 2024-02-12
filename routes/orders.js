@@ -293,13 +293,14 @@ route.post("/addOrderProducts", async (req, res) => {
       return links;
     }
     const allLinks = extractLinks(products.map((image) => image.image));
-
-    const dataProducts = products.map((product) => ({
+    const dataProducts = products.map((product, index) => ({
       idProduct: product._id,
       nameProduct: product.name,
-      imageProduct: allLinks[0],
+      imageProduct: allLinks[index],
       amount: amountAndPrice[product._id]?.quantity || 0,
       price: amountAndPrice[product._id]?.price || 0,
+      gainMarketer: product.gainMarketer,
+      gainAdmin: -product.price1 + product.price2 - product.gainMarketer,
       size: sizes.find((item2) => item2[0] === product._id)?.[1],
     }));
 
@@ -407,9 +408,6 @@ route.post("/editOrder", async (req, res) => {
 route.post("/editOrderSituation", async (req, res) => {
   try {
     const { idOrder, situationOrder } = req.body;
-
-    console.log(situationOrder);
-
     const order = await OrdersModel.findOne({ _id: idOrder });
     order.situationSteps = situationOrder;
     await order.save();
@@ -434,7 +432,9 @@ route.post("/editOrderSituation2", async (req, res) => {
       time,
       notes,
       products,
+      store,
       returnOrders,
+      noReturnOrders,
       nameClient,
       phone1Client,
       phone2Client,
@@ -495,7 +495,7 @@ route.post("/editOrderSituation2", async (req, res) => {
         { name: delivery },
         { $pull: { productsStore: idOrder } }
       );
-      
+
       // payment.money.push({
       //   value: money.toString(),
       //   notes: `من خلال تحويل فلوس طلبيات من ${delivery}`,
@@ -512,6 +512,11 @@ route.post("/editOrderSituation2", async (req, res) => {
         time: new Date().toLocaleTimeString(),
       });
 
+      await UsersModel.updateOne(
+        { name: delivery },
+        { $pull: { productsStore: idOrder } }
+      );
+
       const productsToAdd = products.map((item) => ({
         idProduct: item.idProduct,
         nameProduct: item.nameProduct,
@@ -519,12 +524,14 @@ route.post("/editOrderSituation2", async (req, res) => {
         amount: item.amount,
         price: item.price,
         size: item.size,
+        store: store,
       }));
+
       nameDelivery.productsStore.push(...productsToAdd);
 
       const newNotification = new NotificationsModel({
         person: delivery,
-        message: ``,
+        message: `يوجد طلبيه قد تم إسترجعها مع مندوب التوصيل ${delivery}`,
         date: date,
         time: time,
         notes: notes,
@@ -544,60 +551,82 @@ route.post("/editOrderSituation2", async (req, res) => {
       await newReturns.save();
     }
     if (situationOrder === "إسترجاع جزئي") {
-      nameDelivery.money.push({
-        idOrder: idOrder,
-        money: totalPrice,
-        notes: "",
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        acceptMoney: false,
-      });
+      const NoReturnOrders = noReturnOrders.filter((item) =>
+        !returnOrders.some((item2) => item2.idProduct === item.idProduct)
+      )
 
-      order.situationSteps.push({
-        situation: situationOrder,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
+      console.log(NoReturnOrders)
 
-      const productsToAdd = returnOrders.map((item) => ({
-        idProduct: item.idProduct,
-        nameProduct: item.nameProduct,
-        imageProduct: item.imageProduct,
-        amount: item.amount,
-        price: item.price,
-        size: item.size,
-      }));
-      nameDelivery.productsStore.push(...productsToAdd);
+      // nameDelivery.money.push({
+      //   idOrder: idOrder,
+      //   money: orderMoney,
+      //   notes: "",
+      //   date: new Date().toLocaleDateString(),
+      //   time: new Date().toLocaleTimeString(),
+      //   acceptMoney: true,
+      // });
 
-      const newNotification = new NotificationsModel({
-        person: delivery,
-        marketer: marketer,
-        message: message,
-        date: date,
-        time: time,
-        notes: notes,
-      });
+      // nameMarketer.money.push({
+      //   money: +gainMarketer,
+      //   notes: "",
+      //   date: new Date().toLocaleDateString(),
+      //   time: new Date().toLocaleTimeString(),
+      //   acceptMoney: false,
+      // });
 
-      const newReturns = new ReturnsModel({
-        products: returnOrders.map((item) => ({
-          idProduct: item.idProduct,
-          nameProduct: item.nameProduct,
-          imageProduct: item.imageProduct,
-          amount: item.amount,
-          price: item.price,
-          size: item.size,
-        })),
-      });
-      await newNotification.save();
-      await newReturns.save();
+      // order.situationSteps.push({
+      //   situation: situationOrder,
+      //   date: new Date().toLocaleDateString(),
+      //   time: new Date().toLocaleTimeString(),
+      // });
+
+      // await UsersModel.updateOne(
+      //   { name: delivery },
+      //   { $pull: { productsStore: idOrder } }
+      // );
+
+      // const productsToAdd = returnOrders.map((item) => ({
+      //   idProduct: item.idProduct,
+      //   nameProduct: item.nameProduct,
+      //   imageProduct: item.imageProduct,
+      //   amount: item.amount,
+      //   price: item.price,
+      //   size: item.size,
+      //   store: store
+      // }));
+
+      // // console.log(productsToAdd)
+      // nameDelivery.productsStore.push(...productsToAdd);
+
+      // const newNotification = new NotificationsModel({
+      //   person: delivery,
+      //   marketer: marketer,
+      //   message: message,
+      //   date: date,
+      //   time: time,
+      //   notes: notes,
+      // });
+
+      // const newReturns = new ReturnsModel({
+      //   products: returnOrders.map((item) => ({
+      //     idProduct: item.idProduct,
+      //     nameProduct: item.nameProduct,
+      //     imageProduct: item.imageProduct,
+      //     amount: item.amount,
+      //     price: item.price,
+      //     size: item.size,
+      //   })),
+      // });
+      // await newNotification.save();
+      // await newReturns.save();
     }
-    const save1 = await order.save();
-    const save2 = await nameDelivery.save();
-    const save3 = await nameMarketer.save();
+    // const save1 = await order.save();
+    // const save2 = await nameDelivery.save();
+    // const save3 = await nameMarketer.save();
 
-    if (save1 && save2 && save3) {
-      return res.status(200).send("yes");
-    }
+    // if (save1 && save2 && save3) {
+    //   return res.status(200).send("yes");
+    // }
   } catch (error) {
     return res.status(500).send("no");
   }

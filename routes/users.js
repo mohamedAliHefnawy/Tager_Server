@@ -20,6 +20,17 @@ route.get("/getUsers", async (req, res) => {
   }
 });
 
+route.get("/getDelivery", async (req, res) => {
+  try {
+    const users = await UsersModel.find({validity : 'مندوب توصيل'}).maxTimeMS(20000);
+    const token = jwt.sign({ users }, config.secretKey);
+    res.json({ token, users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 route.get("/getUser/:id", async (req, res) => {
   const userName = req.params.id;
   try {
@@ -230,8 +241,6 @@ route.post("/acceptMoney", async (req, res) => {
 route.post("/declineMoney", async (req, res) => {
   try {
     const { id, nameDelivery, nameAdmin, money } = req.body;
-
-    console.log(nameDelivery, nameAdmin, money);
 
     const notification = await NotificationsModel.findOneAndDelete({
       _id: id,

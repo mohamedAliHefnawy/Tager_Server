@@ -18,18 +18,18 @@ const Users = new Schema({
   },
   productsStore: {
     type: [],
+    productsReturn: [
+      {
+        idProduct: { type: String },
+        nameProduct: { type: String },
+        imageProduct: { type: String },
+        amount: { type: Number },
+        price: { type: Number },
+        size: { type: String },
+        store: { type: String },
 
-    // type: [
-    //   {
-    //     idOrder: { type: String },
-    //     idProduct: { type: String },
-    //     nameProduct: { type: String },
-    //     imageProduct: { type: String },
-    //     amount: { type: Number },
-    //     price: { type: Number },
-    //     size: { type: String },
-    //   },
-    // ],
+      },
+    ],
   },
   money: {
     type: [
