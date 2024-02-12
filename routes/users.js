@@ -22,7 +22,7 @@ route.get("/getUsers", async (req, res) => {
 
 route.get("/getDelivery", async (req, res) => {
   try {
-    const users = await UsersModel.find({validity : 'مندوب توصيل'}).maxTimeMS(20000);
+    const users = await UsersModel.find({ validity: 'مندوب توصيل' }).maxTimeMS(20000);
     const token = jwt.sign({ users }, config.secretKey);
     res.json({ token, users });
   } catch (error) {
@@ -49,10 +49,18 @@ route.get("/getDeliveryProductStore/:id", async (req, res) => {
     const delivery = await UsersModel.findOne({ _id: deliveryId }).maxTimeMS(
       20000
     );
-    const ordersIds = delivery.productsStore.flatMap((product) => product);
-    const orders = await OrdersModel.find({ _id: { $in: ordersIds } });
-    const token = jwt.sign({ orders }, config.secretKey);
-    res.json({ token, orders });
+    const ordersIds = delivery.productsStore
+    .filter(product => !product.idProduct)
+    .map(product => product.productsAll);
+
+    const products = delivery.productsStore
+    .filter(product => product.idProduct)
+
+    const ordersInStore = await OrdersModel.find({ _id: { $in: ordersIds } });
+    const AllData = ordersInStore.concat(products)
+
+    const token = jwt.sign({ AllData }, config.secretKey);
+    res.json({ token, AllData });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

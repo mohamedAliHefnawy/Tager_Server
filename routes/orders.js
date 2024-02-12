@@ -514,8 +514,8 @@ route.post("/editOrderSituation2", async (req, res) => {
 
       await UsersModel.updateOne(
         { name: delivery },
-        { $pull: { productsStore: idOrder } }
-      );
+        { $pull: { 'productsStore': { productsAll: idOrder } } }
+        );
 
       const productsToAdd = products.map((item) => ({
         idProduct: item.idProduct,
@@ -555,78 +555,80 @@ route.post("/editOrderSituation2", async (req, res) => {
         !returnOrders.some((item2) => item2.idProduct === item.idProduct)
       )
 
-      console.log(NoReturnOrders)
+      const gainMarketer = NoReturnOrders.reduce((calac, alt) => calac + alt.gainMarketer * alt.amount, 0)
+      const orderMoney = NoReturnOrders.reduce((calac, alt) => calac + alt.price * alt.amount, 0)
 
-      // nameDelivery.money.push({
-      //   idOrder: idOrder,
-      //   money: orderMoney,
-      //   notes: "",
-      //   date: new Date().toLocaleDateString(),
-      //   time: new Date().toLocaleTimeString(),
-      //   acceptMoney: true,
-      // });
+      nameDelivery.money.push({
+        idOrder: idOrder,
+        money: orderMoney,
+        notes: "",
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        acceptMoney: true,
+      });
 
-      // nameMarketer.money.push({
-      //   money: +gainMarketer,
-      //   notes: "",
-      //   date: new Date().toLocaleDateString(),
-      //   time: new Date().toLocaleTimeString(),
-      //   acceptMoney: false,
-      // });
+      nameMarketer.money.push({
+        money: +gainMarketer,
+        notes: "",
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        acceptMoney: false,
+      });
 
-      // order.situationSteps.push({
-      //   situation: situationOrder,
-      //   date: new Date().toLocaleDateString(),
-      //   time: new Date().toLocaleTimeString(),
-      // });
+      order.situationSteps.push({
+        situation: situationOrder,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      });
 
-      // await UsersModel.updateOne(
-      //   { name: delivery },
-      //   { $pull: { productsStore: idOrder } }
-      // );
+      
+      await UsersModel.updateOne(
+        { name: delivery },
+        { $pull: { 'productsStore': { productsAll: idOrder } } }
+        );
 
-      // const productsToAdd = returnOrders.map((item) => ({
-      //   idProduct: item.idProduct,
-      //   nameProduct: item.nameProduct,
-      //   imageProduct: item.imageProduct,
-      //   amount: item.amount,
-      //   price: item.price,
-      //   size: item.size,
-      //   store: store
-      // }));
+      const productsToAdd = NoReturnOrders.map((item) => ({
+        idProduct: item.idProduct,
+        nameProduct: item.nameProduct,
+        imageProduct: item.imageProduct,
+        amount: item.amount,
+        price: item.price,
+        size: item.size,
+        store: store
+      }));
 
       // // console.log(productsToAdd)
-      // nameDelivery.productsStore.push(...productsToAdd);
+      nameDelivery.productsStore.push(...productsToAdd);
 
-      // const newNotification = new NotificationsModel({
-      //   person: delivery,
-      //   marketer: marketer,
-      //   message: message,
-      //   date: date,
-      //   time: time,
-      //   notes: notes,
-      // });
+      const newNotification = new NotificationsModel({
+        person: delivery,
+        marketer: marketer,
+        message: `يوجد طلبيه قد تم إسترجاها جزئيا مع مندوب التوصيل ${delivery}`,
+        date: date,
+        time: time,
+        notes: notes,
+      });
 
-      // const newReturns = new ReturnsModel({
-      //   products: returnOrders.map((item) => ({
-      //     idProduct: item.idProduct,
-      //     nameProduct: item.nameProduct,
-      //     imageProduct: item.imageProduct,
-      //     amount: item.amount,
-      //     price: item.price,
-      //     size: item.size,
-      //   })),
-      // });
-      // await newNotification.save();
-      // await newReturns.save();
+      const newReturns = new ReturnsModel({
+        products: NoReturnOrders.map((item) => ({
+          idProduct: item.idProduct,
+          nameProduct: item.nameProduct,
+          imageProduct: item.imageProduct,
+          amount: item.amount,
+          price: item.price,
+          size: item.size,
+        })),
+      });
+      await newNotification.save();
+      await newReturns.save();
     }
-    // const save1 = await order.save();
-    // const save2 = await nameDelivery.save();
-    // const save3 = await nameMarketer.save();
+    const save1 = await order.save();
+    const save2 = await nameDelivery.save();
+    const save3 = await nameMarketer.save();
 
-    // if (save1 && save2 && save3) {
-    //   return res.status(200).send("yes");
-    // }
+    if (save1 && save2 && save3) {
+      return res.status(200).send("yes");
+    }
   } catch (error) {
     return res.status(500).send("no");
   }
