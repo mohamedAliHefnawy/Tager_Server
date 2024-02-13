@@ -199,4 +199,74 @@ route.post("/editProduct", async (req, res) => {
   }
 });
 
+route.post("/returnProductsInStore", async (req, res) => {
+  try {
+    const { inputValues } = req.body;
+
+    console.log(inputValues);
+
+    for (const idProduct in inputValues) {
+      const { amount, size, store } = inputValues[idProduct];
+
+      console.log(idProduct, amount, size, store);
+
+      const product = await ProductsModel.findOne({ _id: idProduct });
+
+      if (product) {
+        const newSize = product.size.map((sizeItem) => {
+          if (sizeItem.size === size) {
+            const newStore = sizeItem.store.map((storeItem) => {
+              if (storeItem.nameStore === store) {
+                storeItem.amount += amount;
+              }
+              return storeItem;
+            });
+            return { ...sizeItem, store: newStore };
+          }
+          return sizeItem;
+        });
+
+        await ProductsModel.findByIdAndUpdate(
+          idProduct,
+          { size: newSize },
+          { new: true }
+        );
+        return res.status(200).send("yes");
+      } else {
+        const product2 = await ProductsModel.findOne({
+          "products._id": idProduct,
+        });
+        if (product2) {
+          const productToUpdate = product2.products.filter(
+            (item) => item._id.toString() === idProduct
+          );
+
+          const newSize = productToUpdate[0].size.map((sizeItem) => {
+            if (sizeItem.size === size) {
+              const newStore = sizeItem.store.map((storeItem) => {
+                if (storeItem.nameStore === store) {
+                  storeItem.amount += amount;
+                }
+                return storeItem;
+              });
+              return { ...sizeItem, store: newStore };
+            }
+            return sizeItem;
+          });
+          await ProductsModel.updateOne(
+            { "products._id": idProduct },
+            { $set: { "products.$.size": newSize } }
+          );
+          return res.status(200).send("yes");
+        } else {
+          console.log(2);
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("no");
+  }
+});
+
 module.exports = route;

@@ -210,6 +210,8 @@ route.post("/addOrderProducts", async (req, res) => {
 
     const nameMarketer = await UsersModel.findOne({ name: marketer });
 
+    console.log(amountAndPrice);
+
     for (const [productId, { quantity }] of Object.entries(amountAndPrice)) {
       const product = await ProductsModel.findById(productId);
 
@@ -514,8 +516,8 @@ route.post("/editOrderSituation2", async (req, res) => {
 
       await UsersModel.updateOne(
         { name: delivery },
-        { $pull: { 'productsStore': { productsAll: idOrder } } }
-        );
+        { $pull: { productsStore: { productsAll: idOrder } } }
+      );
 
       const productsToAdd = products.map((item) => ({
         idProduct: item.idProduct,
@@ -551,12 +553,19 @@ route.post("/editOrderSituation2", async (req, res) => {
       await newReturns.save();
     }
     if (situationOrder === "إسترجاع جزئي") {
-      const NoReturnOrders = noReturnOrders.filter((item) =>
-        !returnOrders.some((item2) => item2.idProduct === item.idProduct)
-      )
+      const NoReturnOrders = noReturnOrders.filter(
+        (item) =>
+          !returnOrders.some((item2) => item2.idProduct === item.idProduct)
+      );
 
-      const gainMarketer = NoReturnOrders.reduce((calac, alt) => calac + alt.gainMarketer * alt.amount, 0)
-      const orderMoney = NoReturnOrders.reduce((calac, alt) => calac + alt.price * alt.amount, 0)
+      const gainMarketer = NoReturnOrders.reduce(
+        (calac, alt) => calac + alt.gainMarketer * alt.amount,
+        0
+      );
+      const orderMoney = NoReturnOrders.reduce(
+        (calac, alt) => calac + alt.price * alt.amount,
+        0
+      );
 
       nameDelivery.money.push({
         idOrder: idOrder,
@@ -581,11 +590,10 @@ route.post("/editOrderSituation2", async (req, res) => {
         time: new Date().toLocaleTimeString(),
       });
 
-      
       await UsersModel.updateOne(
         { name: delivery },
-        { $pull: { 'productsStore': { productsAll: idOrder } } }
-        );
+        { $pull: { productsStore: { productsAll: idOrder } } }
+      );
 
       const productsToAdd = NoReturnOrders.map((item) => ({
         idProduct: item.idProduct,
@@ -594,7 +602,7 @@ route.post("/editOrderSituation2", async (req, res) => {
         amount: item.amount,
         price: item.price,
         size: item.size,
-        store: store
+        store: store,
       }));
 
       // // console.log(productsToAdd)
