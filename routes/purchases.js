@@ -38,9 +38,8 @@ route.get("/getpurchase/:id", async (req, res) => {
 
 route.post("/addPurchases", async (req, res) => {
   try {
-    const { inputValues, supplier, moneySafe, ProductsName , totalBuy } = req.body;
-
-    console.log(inputValues);
+    const { inputValues, supplier, moneySafe, ProductsName, totalBuy } =
+      req.body;
 
     for (const productId in inputValues) {
       const { selectedSize, selectedStore } = inputValues[productId];
@@ -53,6 +52,23 @@ route.post("/addPurchases", async (req, res) => {
           amount: amount,
         };
       });
+
+      if (selectedStore && selectedStore.length > 0) {
+        for (const storeName of selectedStore) {
+          const store = await StoresModel.findOne({ gbs: storeName });
+
+          if (store) {
+            if (!store.products.includes(productId)) {
+              store.products.push(productId);
+              await store.save();
+            } else {
+              console.log(`already ProductIs`);
+            }
+          } else {
+            console.error(`المخزن ${storeName} غير موجود.`);
+          }
+        }
+      }
 
       const updatedMainProduct = await ProductsModel.findOneAndUpdate(
         { _id: productId },
@@ -74,7 +90,6 @@ route.post("/addPurchases", async (req, res) => {
 
     for (const productId in inputValues) {
       const { selectedSize, selectedStore } = inputValues[productId];
-
       const storeObjects = selectedStore.map((storeName) => {
         const storedValue = inputValues[productId][storeName];
         const amount =
@@ -135,7 +150,7 @@ route.post("/addPurchases", async (req, res) => {
 
         if (selectedStore && selectedStore.length > 0) {
           for (const storeName of selectedStore) {
-            const store = await StoresModel.findOne({ name: storeName });
+            const store = await StoresModel.findOne({ gbs: storeName });
 
             if (store) {
               if (!store.products.includes(productId)) {

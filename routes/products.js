@@ -4,6 +4,7 @@ const config = require("../config");
 const route = express.Router();
 const ProductsModel = require("../models/products");
 const CategoriesModel = require("../models/categories");
+const UsersModel = require("../models/users");
 
 route.get("/getProducts", async (req, res) => {
   try {
@@ -201,14 +202,27 @@ route.post("/editProduct", async (req, res) => {
 
 route.post("/returnProductsInStore", async (req, res) => {
   try {
-    const { inputValues } = req.body;
+    const { inputValues, idDelivery } = req.body;
 
-    console.log(inputValues);
+    const delivery = await UsersModel.findOne({ _id: idDelivery });
 
     for (const idProduct in inputValues) {
       const { amount, size, store } = inputValues[idProduct];
 
-      console.log(idProduct, amount, size, store);
+      const idProductsToDelete = Object.keys(inputValues);
+
+      await UsersModel.updateOne(
+        { _id: delivery },
+        {
+          $pull: {
+            productsStore: {
+              idProduct: { $in: idProductsToDelete },
+            },
+          },
+        }
+      );
+
+      console.log(idProduct);
 
       const product = await ProductsModel.findOne({ _id: idProduct });
 
