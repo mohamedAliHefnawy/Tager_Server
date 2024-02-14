@@ -61,14 +61,20 @@ route.get("/getProductsInStore/:id", async (req, res) => {
 
     const productIds = store.products.flatMap((product) => product);
 
-    let combinedProducts = [];
     let combinedProducts2 = [];
 
-    for (const productId of productIds) {
+    for (const productId of store.products) {
       const product = await ProductsModel.findById(productId);
 
       if (product) {
-        combinedProducts2.push(product);
+        // إذا كان المنتج ليس بالفعل موجود في المصفوفة، قم بإضافته
+        if (
+          !combinedProducts2.some(
+            (p) => p._id.toString() === product._id.toString()
+          )
+        ) {
+          combinedProducts2.push(product);
+        }
       } else {
         const product2 = await ProductsModel.find({
           products: {
@@ -78,17 +84,33 @@ route.get("/getProductsInStore/:id", async (req, res) => {
           },
         });
 
-        const filteredProducts = product2.map((item) =>
-          item.products.filter((product) =>
-            productIds.includes(product._id.toString())
-          )
-        );
+        const filteredProducts = await Promise.all(
+          product2.map(async (item) => {
+            const filtered = item.products.filter((product) =>
+              productIds.includes(product._id.toString())
+            );
+            return filtered;
+          })
+        ).then((arrays) => arrays.flat());
 
-        combinedProducts2 = combinedProducts2.concat(filteredProducts);
+        // إضافة المنتجات إلى combinedProducts2 إذا لم تكن بالفعل موجودة
+        filteredProducts.flat().forEach((p) => {
+          if (
+            !combinedProducts2.some(
+              (existingProduct) =>
+                existingProduct._id.toString() === p._id.toString()
+            )
+          ) {
+            combinedProducts2.push(p);
+          }
+        });
       }
     }
 
     const final = combinedProducts2.flatMap((item) => item);
+    console.log(final);
+
+    // console.log(final);
     const Store = store.gbs;
     const token = jwt.sign({ final, Store }, config.secretKey);
     res.json({ token, final, Store });
