@@ -59,14 +59,6 @@ route.post("/addOrder", async (req, res) => {
     const product = await ProductsModel.findOne({ _id: idProduct });
     const nameMarketer = await UsersModel.findOne({ name: marketer });
 
-    // nameMarketer.money.push({
-    //   money: gainMarketer,
-    //   notes: "",
-    //   date: new Date().toLocaleDateString(),
-    //   time: new Date().toLocaleTimeString(),
-    //   acceptMoney: false,
-    // });
-
     if (product) {
       const newSize = product.size.map((sizeItem) => {
         if (sizeItem.size === sizeProduct) {
@@ -209,8 +201,6 @@ route.post("/addOrderProducts", async (req, res) => {
     } = req.body;
 
     const nameMarketer = await UsersModel.findOne({ name: marketer });
-
-    console.log(amountAndPrice);
 
     for (const [productId, { quantity }] of Object.entries(amountAndPrice)) {
       const product = await ProductsModel.findById(productId);
