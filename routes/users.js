@@ -22,7 +22,9 @@ route.get("/getUsers", async (req, res) => {
 
 route.get("/getDelivery", async (req, res) => {
   try {
-    const users = await UsersModel.find({ validity: 'مندوب توصيل' }).maxTimeMS(20000);
+    const users = await UsersModel.find({ validity: "مندوب توصيل" }).maxTimeMS(
+      20000
+    );
     const token = jwt.sign({ users }, config.secretKey);
     res.json({ token, users });
   } catch (error) {
@@ -50,14 +52,15 @@ route.get("/getDeliveryProductStore/:id", async (req, res) => {
       20000
     );
     const ordersIds = delivery.productsStore
-    .filter(product => !product.idProduct)
-    .map(product => product.productsAll);
+      .filter((product) => !product.idProduct)
+      .map((product) => product.productsAll);
 
-    const products = delivery.productsStore
-    .filter(product => product.idProduct)
+    const products = delivery.productsStore.filter(
+      (product) => product.idProduct
+    );
 
     const ordersInStore = await OrdersModel.find({ _id: { $in: ordersIds } });
-    const AllData = ordersInStore.concat(products)
+    const AllData = ordersInStore.concat(products);
 
     const token = jwt.sign({ AllData }, config.secretKey);
     res.json({ token, AllData });
@@ -67,9 +70,30 @@ route.get("/getDeliveryProductStore/:id", async (req, res) => {
   }
 });
 
+route.post("/loginMoneySafe", async (req, res) => {
+  const { name, password } = req.body;
+  try {
+    const user = await UsersModel.findOne({ name });
+    if (!user) {
+      return res.send("notFoundUser");
+    }
+    const comparePassword = await bcyrbt.compare(
+      password,
+      user.passwordMoneyStore
+    );
+    if (!comparePassword) {
+      return res.send("no");
+    }
+
+    return res.send("yes");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("error");
+  }
+});
+
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
-
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
@@ -98,11 +122,13 @@ route.post("/signUp", async (req, res) => {
   }
 
   const hashedPassword = await bcyrbt.hash(password, saltRounds);
+
   const newUser = new UsersModel({
     name: name,
     image: "",
     phone: phone,
     password: hashedPassword,
+    passwordMoneyStore: "",
     validity: "زبون عادي",
     nameCompany: "",
     phoneCompany: "",
@@ -126,6 +152,7 @@ route.post("/editUser", async (req, res) => {
       newName,
       password,
       passwordNew,
+      passwordMoneyStore,
       phoneMarketer,
       nameCompany,
       phoneCompany,
@@ -140,9 +167,14 @@ route.post("/editUser", async (req, res) => {
         return res.send("noPaswordCom");
       } else {
         const hashedPassword = await bcyrbt.hash(passwordNew, saltRounds);
+        const hashedPassword2 = await bcyrbt.hash(
+          passwordMoneyStore,
+          saltRounds
+        );
         user.image = imageURLMarketr;
         user.phone = phoneMarketer;
         user.password = hashedPassword;
+        user.passwordMoneyStore = hashedPassword2;
         user.nameCompany = nameCompany;
         user.phoneCompany = phoneCompany;
         user.imageCompany = imageURLCompany;
@@ -183,13 +215,22 @@ route.post("/addemployee", async (req, res) => {
 
 route.post("/editemployee", async (req, res) => {
   try {
-    const { id, name, phone, password, selectedValueValidity } = req.body;
+    const {
+      id,
+      name,
+      phone,
+      password,
+      passwordMoneyStore,
+      selectedValueValidity,
+    } = req.body;
     const employee = await UsersModel.findById(id);
     const hashedPassword = await bcyrbt.hash(password, saltRounds);
+    const hashedPassword2 = await bcyrbt.hash(passwordMoneyStore, saltRounds);
 
     employee.phone = phone;
     employee.password = hashedPassword;
     employee.validity = selectedValueValidity;
+    employee.passwordMoneyStore = hashedPassword2;
     await employee.save();
     return res.status(200).send("yes");
   } catch (error) {

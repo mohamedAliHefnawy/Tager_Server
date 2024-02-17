@@ -77,6 +77,8 @@ route.post("/addOrder", async (req, res) => {
         { size: newSize },
         { new: true }
       );
+      product.numbersSells = product.numbersSells + 1;
+      await product.save();
     } else {
       const product2 = await ProductsModel.findOne({
         "products._id": idProduct,
@@ -85,6 +87,9 @@ route.post("/addOrder", async (req, res) => {
         const productToUpdate = product2.products.filter(
           (item) => item._id.toString() === idProduct
         );
+
+        productToUpdate[0].numbersSells = productToUpdate[0].numbersSells + 1;
+        await product2.save();
 
         const newSize = productToUpdate[0].size.map((sizeItem) => {
           if (sizeItem.size === sizeProduct) {
@@ -102,6 +107,8 @@ route.post("/addOrder", async (req, res) => {
           { "products._id": idProduct },
           { $set: { "products.$.size": newSize } }
         );
+        // productToUpdate.numbersSells = productToUpdate.numbersSells + 1;
+        // await productToUpdate.save();
       } else {
         console.log(2);
       }

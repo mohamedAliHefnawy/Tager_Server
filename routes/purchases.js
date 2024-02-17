@@ -71,10 +71,10 @@ route.post("/addPurchases", async (req, res) => {
       }
 
       const updatedMainProduct = await ProductsModel.findOneAndUpdate(
-        { _id: productId },
+        { _id: productId, "size.size": { $in: selectedSize } },
         {
           $set: {
-            "size.$[innerElem].store": storeObjects || [],
+            "size.$[innerElem].store": storeObjects,
           },
         },
         {

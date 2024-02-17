@@ -91,6 +91,7 @@ route.post("/addProduct", async (req, res) => {
       gainMarketer: priceProduct4,
       color: colorProductMain,
       size: newSizeProduct1,
+      numbersSells: 0,
       products: rows.map((row) => ({
         name: nameProduct,
         catogry: selectedCategory,
@@ -98,6 +99,7 @@ route.post("/addProduct", async (req, res) => {
         price1: +row.cost,
         price2: +row.marketer,
         price3: +row.regularCustomer,
+        numbersSells: 0,
         gainMarketer: +row.gainMarketer,
         color: row.color,
         size: row.dynamicInputs.map((sizeValue) => ({
@@ -221,8 +223,6 @@ route.post("/returnProductsInStore", async (req, res) => {
           },
         }
       );
-
-      console.log(idProduct);
 
       const product = await ProductsModel.findOne({ _id: idProduct });
 

@@ -110,16 +110,11 @@ route.get("/getProductsInStore/:id", async (req, res) => {
 route.post("/convertProductsBetweenStores", async (req, res) => {
   try {
     const { inputValues, storeWith } = req.body;
-
-    console.log(inputValues);
-
     for (const [productId, { size, store, amount }] of Object.entries(
       inputValues
     )) {
       const product = await ProductsModel.findById(productId);
       const storeTo = await StoresModel.findOne({ gbs: store[0] });
-
-      console.log(size[0], store[0], storeWith, amount, productId);
 
       if (product) {
         const newSize = product.size.map((sizeItem) => {
