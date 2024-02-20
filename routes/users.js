@@ -84,7 +84,6 @@ route.post("/loginMoneySafe", async (req, res) => {
     if (!comparePassword) {
       return res.send("no");
     }
-
     return res.send("yes");
   } catch (error) {
     console.error(error);
@@ -94,6 +93,8 @@ route.post("/loginMoneySafe", async (req, res) => {
 
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
+
+  console.log(name, password)
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
@@ -223,9 +224,13 @@ route.post("/editemployee", async (req, res) => {
       passwordMoneyStore,
       selectedValueValidity,
     } = req.body;
+
     const employee = await UsersModel.findById(id);
     const hashedPassword = await bcyrbt.hash(password, saltRounds);
-    const hashedPassword2 = await bcyrbt.hash(passwordMoneyStore, saltRounds);
+    const hashedPassword2 = await bcyrbt.hash(
+      passwordMoneyStore || "",
+      saltRounds
+    );
 
     employee.phone = phone;
     employee.password = hashedPassword;
@@ -249,22 +254,6 @@ route.post("/acceptMoney", async (req, res) => {
     const delivery = await UsersModel.findOne({ name: nameDelivery });
     const admin = await UsersModel.findOne({ name: nameAdmin });
     const payment = await PaymentModel.findOne({ name: "فوادفون كاش" });
-
-    // delivery.money.push({
-    //   money: -money,
-    //   notes: "الأدمن قد إستلم الأموال",
-    //   date: new Date().toLocaleDateString(),
-    //   time: new Date().toLocaleTimeString(),
-    //   acceptMoney: false,
-    // });
-
-    // admin.money.push({
-    //   money: money,
-    //   notes: "من خلال إستلام الأموال من مندوب التوصيل",
-    //   date: new Date().toLocaleDateString(),
-    //   time: new Date().toLocaleTimeString(),
-    //   acceptMoney: true,
-    // });
 
     payment.money.push({
       value: money.toString(),

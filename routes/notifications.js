@@ -31,11 +31,30 @@ route.post("/addNotification", async (req, res) => {
   // const updatedDelivery = await UsersModel.findOne({ name: person });
 
   const newNotification = new NotificationsModel({
-    person: person,
+    person: person || "",
     message: message,
     date: date,
     time: time,
-    notes: notes,
+    notes: notes || "",
+  });
+
+  const save = await newNotification.save();
+  if (save) {
+    return res.send("yes");
+  }
+  // console.error(error);
+  // return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
+});
+
+route.post("/addNotification2", async (req, res) => {
+  const { message, date, time, notes, person } = req.body;
+
+  const newNotification = new NotificationsModel({
+    person: person || "",
+    message: message,
+    date: date,
+    time: time,
+    notes: notes || "",
   });
 
   const save = await newNotification.save();

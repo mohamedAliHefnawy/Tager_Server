@@ -85,11 +85,17 @@ route.get("/getBestProductsSelling", async (req, res) => {
     const productsArrays = bestProductsSelling.map(
       (product) => product.products
     );
+
+    // console.log(bestProductsSelling)
     const allProducts = [].concat(...productsArrays);
     let arayAllProducts = [];
 
+    let Id = "";
+
     for (product of bestProductsSelling) {
+      Id = product._id;
       arayAllProducts.push({
+        idProduct: product._id,
         name: product.name,
         image: product.image[0],
         catogry: product.catogry,
@@ -102,6 +108,7 @@ route.get("/getBestProductsSelling", async (req, res) => {
 
     for (product of allProducts) {
       arayAllProducts.push({
+        idProduct: '',
         name: product.name,
         image: product.image[0],
         catogry: product.catogry,
@@ -115,7 +122,7 @@ route.get("/getBestProductsSelling", async (req, res) => {
     const sortedProducts = arayAllProducts.sort(
       (a, b) => b.numbersSells - a.numbersSells
     );
-    const top5Products = sortedProducts.slice(0, 4);
+    const top5Products = sortedProducts.slice(0, 5);
     const token = jwt.sign({ top5Products }, config.secretKey);
     res.json({ token, top5Products });
   } catch (error) {

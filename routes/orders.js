@@ -204,6 +204,7 @@ route.post("/addOrderProducts", async (req, res) => {
       gainMarketer,
       gainAdmin,
       marketer,
+      userValidity,
       deliveryPrice,
     } = req.body;
 
@@ -268,15 +269,6 @@ route.post("/addOrderProducts", async (req, res) => {
         }
       }
     }
-
-    // nameMarketer.money.push({
-    //   money: gainMarketer,
-    //   notes: "",
-    //   date: new Date().toLocaleDateString(),
-    //   time: new Date().toLocaleTimeString(),
-    //   acceptMoney: false,
-    // });
-
     function extractLinks(arr) {
       let links = [];
       if (Array.isArray(arr)) {
@@ -298,8 +290,11 @@ route.post("/addOrderProducts", async (req, res) => {
       imageProduct: allLinks[index],
       amount: amountAndPrice[product._id]?.quantity || 0,
       price: amountAndPrice[product._id]?.price || 0,
-      gainMarketer: product.gainMarketer,
-      gainAdmin: -product.price1 + product.price2 - product.gainMarketer,
+      gainMarketer: userValidity !== "مندوب تسويق" ? 0 : product.gainMarketer,
+      gainAdmin:
+        userValidity !== "مندوب تسويق"
+          ? -product.price1 + product.price3
+          : -product.price1 + product.price2 - product.gainMarketer,
       size: sizes.find((item2) => item2[0] === product._id)?.[1],
     }));
 
