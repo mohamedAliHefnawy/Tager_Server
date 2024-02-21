@@ -3,9 +3,6 @@ const route = express.Router();
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const SuppliersModel = require("../models/suppliers");
-// const PurchasesModel = require("../models/purchases");
-// const EmployeesModel = require("../models/employees");
-// const PaymentModel = require("../models/payment");
 
 route.get("/getSuppliers", async (req, res) => {
   try {
@@ -37,18 +34,18 @@ route.get("/getSuppliersPurchases/:id", async (req, res) => {
 });
 
 route.post("/addSuppliers", async (req, res) => {
-  const { nameSupplier, phoneSupplier, imageURL } = req.body;
+  const { name, phone, imageURL } = req.body;
 
   const suppliers = await SuppliersModel.findOne({
-    name: nameSupplier,
+    name: name,
   });
   if (suppliers) {
     return res.send("no");
   }
   const newSuppliers = new SuppliersModel({
-    name: nameSupplier,
-    image: imageURL,
-    phone: phoneSupplier,
+    name: name,
+    image: imageURL || "",
+    phone: phone || "",
     money: 0,
     indept: 0,
     date: new Date().toLocaleDateString(),
@@ -64,14 +61,13 @@ route.post("/addSuppliers", async (req, res) => {
 
 route.post("/editSuppliers", async (req, res) => {
   try {
-    const { id, nameSupplier, phoneSupplier, imageSupplier } = req.body;
+    const { id, phone, imageURL } = req.body;
 
     const supplier = await SuppliersModel.findOne({
       _id: id,
     });
-    supplier.name = nameSupplier;
-    supplier.phone = phoneSupplier;
-    supplier.image = imageSupplier;
+    supplier.phone = phone;
+    supplier.image = imageURL;
 
     await supplier.save();
     return res.status(200).send("yes");

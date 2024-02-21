@@ -4,6 +4,9 @@ const Suppliers = new Schema({
   name: {
     type: String,
   },
+  image: {
+    type: String,
+  },
   phone: {
     type: String,
   },
@@ -16,9 +19,7 @@ const Suppliers = new Schema({
   indept: {
     type: Number,
   },
-  // purchases: {
-  //   type: [],
-  // },
+
 });
 
 const SuppliersModel = model("suppliers", Suppliers);
