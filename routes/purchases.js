@@ -70,6 +70,26 @@ route.post("/addPurchases", async (req, res) => {
         }
       }
 
+      for (const nameStore of storeObjects) {
+
+        console.log(nameStore)
+        
+        // const store = await StoresModel.findOne({ gbs: storeName });
+
+        // if (store) {
+        //   if (!store.products.includes(productId)) {
+        //     store.products.push(productId);
+        //     await store.save();
+        //   } else {
+        //     console.log(`already ProductIs`);
+        //   }
+        // } else {
+        //   console.error(`المخزن ${storeName} غير موجود.`);
+        // }
+      }
+
+      // console.log(storeObjects)
+
       const updatedMainProduct = await ProductsModel.findOneAndUpdate(
         { _id: productId, "size.size": { $in: selectedSize } },
         {
