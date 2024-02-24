@@ -98,6 +98,7 @@ route.get("/getBestProductsSelling", async (req, res) => {
         idProduct: product._id,
         name: product.name,
         image: product.image[0],
+        size: product.size[0].size,
         catogry: product.catogry,
         price1: product.price1,
         price2: product.price2,
@@ -108,9 +109,10 @@ route.get("/getBestProductsSelling", async (req, res) => {
 
     for (product of allProducts) {
       arayAllProducts.push({
-        idProduct: '',
+        idProduct: "",
         name: product.name,
         image: product.image[0],
+        size: product.size[0].size,
         catogry: product.catogry,
         price1: product.price1,
         price2: product.price2,

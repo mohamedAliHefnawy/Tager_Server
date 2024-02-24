@@ -149,6 +149,8 @@ route.post("/addOrder", async (req, res) => {
       totalPriceProducts: totalPriceProducts,
       gainMarketer: gainMarketer,
       gainAdmin: gainAdmin,
+      DeliveryName: "",
+      DeliveryPhone: "",
       marketer: marketer,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
@@ -309,6 +311,8 @@ route.post("/addOrderProducts", async (req, res) => {
       gainMarketer: gainMarketer,
       gainAdmin: gainAdmin,
       marketer: marketer,
+      DeliveryName: "",
+      DeliveryPhone: "",
       PhoneCompany: phoneCompany,
       NameCompany: nameCompany,
       ImageURLCompany: imageURLCompany,
@@ -636,35 +640,53 @@ route.post("/editOrderSituation2", async (req, res) => {
 
 route.post("/chatOrder", async (req, res) => {
   try {
-    const { idOrder, text, val, admin, marketer, delivery } = req.body;
+    const { idOrder, text, val, user } = req.body;
     const order = await OrdersModel.findOne({ _id: idOrder });
-    if (val === "أدمن") {
-      order.chatMessages[0].admin.push({
-        person: admin,
-        message: text,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
-    }
-    if (val === "مندوب تسويق") {
-      order.chatMessages[0].marketer.push({
-        person: marketer,
-        message: text,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
-    }
-    if (val === "مندوب توصيل") {
-      order.chatMessages[0].delivery.push({
-        person: delivery,
-        message: text,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-      });
-    }
+
+    order.chatMessages.push({
+      person: user,
+      message: text,
+      valid: val,
+      seeMessage: false,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
+    const JsonText = {
+      person: user,
+      val,
+      message: text,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    };
+
+    // console.log(JsonText);
 
     await order.save();
-    return res.status(200).send("yes");
+    return res.status(200).json({
+      answer: "yes",
+      message: JsonText,
+    });
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+
+route.post("/showedMessages", async (req, res) => {
+  try {
+    const { idOrder, val, user } = req.body;
+    const order = await OrdersModel.findOne({ _id: idOrder });
+
+    const filteredMessages = order.chatMessages.filter((message) => {
+      return message.person !== user || message.valid !== val;
+    });
+
+    for (const message of filteredMessages) {
+      await OrdersModel.updateOne(
+        { _id: idOrder, "chatMessages._id": message._id },
+        { $set: { "chatMessages.$.seeMessage": true } }
+      );
+    }
   } catch (error) {
     return res.status(500).send("no");
   }

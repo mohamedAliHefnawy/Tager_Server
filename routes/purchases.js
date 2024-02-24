@@ -71,9 +71,8 @@ route.post("/addPurchases", async (req, res) => {
       }
 
       for (const nameStore of storeObjects) {
+        console.log(nameStore);
 
-        console.log(nameStore)
-        
         // const store = await StoresModel.findOne({ gbs: storeName });
 
         // if (store) {
@@ -310,7 +309,7 @@ route.post("/addPurchases", async (req, res) => {
       Products: productsArray.flatMap((purchase) => purchase.products),
       payment: 0,
       totalProducts: totalAmountAllProducts,
-      totalPrice: sum,
+      totalPrice: totalBuy,
       indebt: 0,
       supplier: supplier,
       moneySafe: moneySafe,

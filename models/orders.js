@@ -33,6 +33,8 @@ const Orders = new Schema({
   totalPriceProducts: { type: Number },
   gainAdmin: { type: Number },
   gainMarketer: { type: Number },
+  DeliveryName: { type: String },
+  DeliveryPhone: { type: String },
   marketer: { type: String },
   PhoneCompany: { type: String },
   NameCompany: { type: String },
@@ -52,36 +54,12 @@ const Orders = new Schema({
   chatMessages: {
     type: [
       {
-        admin: {
-          type: [
-            {
-              message: { type: String },
-              person: { type: String },
-              date: { type: String },
-              time: { type: String },
-            },
-          ],
-        },
-        marketer: {
-          type: [
-            {
-              message: { type: String },
-              date: { type: String },
-              person: { type: String },
-              time: { type: String },
-            },
-          ],
-        },
-        delivery: {
-          type: [
-            {
-              message: { type: String },
-              date: { type: String },
-              person: { type: String },
-              time: { type: String },
-            },
-          ],
-        },
+        message: { type: String },
+        person: { type: String },
+        valid: { type: String },
+        date: { type: String },
+        time: { type: String },
+        seeMessage: { type: Boolean },
       },
     ],
   },

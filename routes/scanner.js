@@ -9,9 +9,6 @@ const OrdersModel = require("../models/orders");
 
 route.get("/getOrder/:id", async (req, res) => {
   const orderId = req.params.id;
-  // const { deliveryName } = req.body;
-
-  console.log(orderId);
   try {
     const order = await OrdersModel.findById(orderId).maxTimeMS(20000);
     const token = jwt.sign({ order }, config.secretKey);
@@ -42,7 +39,6 @@ route.get("/getOrders/:id", async (req, res) => {
   }
 });
 
-
 route.get("/getOrdersInStore/:id", async (req, res) => {
   const deliveryName = req.params.id;
   try {
@@ -52,22 +48,17 @@ route.get("/getOrdersInStore/:id", async (req, res) => {
     if (!delivery) {
       return res.status(404).send("delivery not found");
     }
-
     const ordersIds = delivery.productsStore
-      .filter(product => !product.idProduct)
-      .map(product => product.productsAll);
+      .filter((product) => !product.idProduct)
+      .map((product) => product.productsAll);
 
-    const products = delivery.productsStore
-      .filter(product => product.idProduct)
+    const products = delivery.productsStore.filter(
+      (product) => product.idProduct
+    );
 
     const ordersInStore = await OrdersModel.find({ _id: { $in: ordersIds } });
-    
-    const AllData = ordersInStore.concat(products)
-
-
-
+    const AllData = ordersInStore.concat(products);
     const token = jwt.sign({ AllData }, config.secretKey);
-
     res.json({ token, AllData });
   } catch (error) {
     console.error(error);
@@ -77,7 +68,6 @@ route.get("/getOrdersInStore/:id", async (req, res) => {
 
 route.post("/addOrderWithDelivery", async (req, res) => {
   const { deliveryName, idOrder } = req.body;
-
   const delivery = await UsersModel.findOne({ name: deliveryName });
   const order = await OrdersModel.findById(idOrder).maxTimeMS(20000);
 
@@ -95,6 +85,9 @@ route.post("/addOrderWithDelivery", async (req, res) => {
     date: new Date().toLocaleDateString(),
     time: new Date().toLocaleTimeString(),
   });
+
+  order.DeliveryName = deliveryName;
+  order.DeliveryPhone = delivery.phone;
 
   const save = await delivery.save();
   const save2 = await order.save();
