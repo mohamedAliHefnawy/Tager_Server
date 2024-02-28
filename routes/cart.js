@@ -29,8 +29,8 @@ route.get("/getProductsInCart/:user", async (req, res) => {
     });
 
     const separatedData2 = productIds[0].map((item) => {
-      const [id , size] = item.split("-");
-      return [id , size];
+      const [id, size] = item.split("-");
+      return [id, size];
     });
 
     const result = separatedData.map((item) => item[0]);
@@ -52,7 +52,10 @@ route.get("/getProductsInCart/:user", async (req, res) => {
 
     const combinedProducts = [...products2, ...filteredProducts2];
     const combinedProducts2 = [...separatedData2];
-    const token = jwt.sign({ combinedProducts , combinedProducts2 }, config.secretKey);
+    const token = jwt.sign(
+      { combinedProducts, combinedProducts2 },
+      config.secretKey
+    );
     res.json({ token, combinedProducts, combinedProducts2 });
   } catch (error) {
     console.error(error);
@@ -65,7 +68,6 @@ route.post("/addProductToCart", async (req, res) => {
     const { user, idProduct, size } = req.body;
 
     const dala = `${idProduct}-${size}`;
-    console.log(dala);
 
     const userCart = await CartModel.findOne({ "user.username": user });
     if (userCart) {

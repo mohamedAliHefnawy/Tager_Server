@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const route = express.Router();
+const mongoose = require("mongoose");
 const PurchasesModel = require("../models/purchases");
 const ProductsModel = require("../models/products");
 const PaymentModel = require("../models/payment");
@@ -41,74 +42,22 @@ route.post("/addPurchases", async (req, res) => {
     const { inputValues, supplier, moneySafe, ProductsName, totalBuy } =
       req.body;
 
+    const numberOfProducts = Object.keys(inputValues).length;
+
     for (const productId in inputValues) {
       const { selectedSize, selectedStore } = inputValues[productId];
-      const storeObjects = selectedStore.map((storeName) => {
-        const storedValue = inputValues[productId][storeName];
-        const amount =
-          storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : 0;
-        return {
-          nameStore: storeName,
-          amount: amount,
-        };
-      });
 
       if (selectedStore && selectedStore.length > 0) {
         for (const storeName of selectedStore) {
           const store = await StoresModel.findOne({ gbs: storeName });
 
-          if (store) {
-            if (!store.products.includes(productId)) {
-              store.products.push(productId);
-              await store.save();
-            } else {
-              console.log(`already ProductIs`);
-            }
-          } else {
-            console.error(`المخزن ${storeName} غير موجود.`);
+          if (store && !store.products.includes(productId)) {
+            store.products.push(productId);
+            await store.save();
           }
         }
       }
 
-      for (const nameStore of storeObjects) {
-        console.log(nameStore);
-
-        // const store = await StoresModel.findOne({ gbs: storeName });
-
-        // if (store) {
-        //   if (!store.products.includes(productId)) {
-        //     store.products.push(productId);
-        //     await store.save();
-        //   } else {
-        //     console.log(`already ProductIs`);
-        //   }
-        // } else {
-        //   console.error(`المخزن ${storeName} غير موجود.`);
-        // }
-      }
-
-      // console.log(storeObjects)
-
-      const updatedMainProduct = await ProductsModel.findOneAndUpdate(
-        { _id: productId, "size.size": { $in: selectedSize } },
-        {
-          $set: {
-            "size.$[innerElem].store": storeObjects,
-          },
-        },
-        {
-          arrayFilters: [{ "innerElem.size": { $in: selectedSize } }],
-          new: true,
-        }
-      );
-
-      if (!updatedMainProduct) {
-        console.error("MainProduct not found:", productId);
-      }
-    }
-
-    for (const productId in inputValues) {
-      const { selectedSize, selectedStore } = inputValues[productId];
       const storeObjects = selectedStore.map((storeName) => {
         const storedValue = inputValues[productId][storeName];
         const amount =
@@ -116,79 +65,53 @@ route.post("/addPurchases", async (req, res) => {
         return {
           nameStore: storeName,
           amount: amount,
+          _id: new mongoose.Types.ObjectId().toString(),
         };
       });
 
-      try {
-        const updatedMainProduct = await ProductsModel.findOneAndUpdate(
-          { "products._id": productId },
-          {
-            $set: {
-              "products.$[elem].size.$[innerElem].store": storeObjects || [],
-            },
-          },
-          {
-            arrayFilters: [
-              { "elem._id": productId },
-              { "innerElem.size": { $in: selectedSize } },
-            ],
-            new: true,
-          }
-        );
+      const productSearch = await ProductsModel.findOne({ _id: productId });
+      const productSearch2 = await ProductsModel.findOne({
+        "products._id": productId,
+      });
 
-        if (!updatedMainProduct) {
-          console.error("Main product not found.");
-          continue;
-        }
+      const updatedStores = new Set(); // To track updated stores
 
-        for (const subProduct of updatedMainProduct.products) {
-          if (subProduct._id.toString() === productId) {
-            continue;
-          }
+      for (const sizeKey of selectedSize) {
+        const productSize =
+          productSearch?.size.find((item) => item.size === sizeKey) ||
+          productSearch2?.products
+            .find((item) => item._id.toString() === productId)
+            ?.size.find((item) => item.size === sizeKey);
 
-          const updatedSubProduct = await ProductsModel.findOneAndUpdate(
-            { "products._id": subProduct._id },
-            {
-              $set: {
-                "products.$[elem].size.$[innerElem].store": storeObjects || [],
-              },
-            },
-            {
-              arrayFilters: [
-                { "elem._id": subProduct._id },
-                { "innerElem.size": { $in: selectedSize } },
-              ],
-              new: true,
-            }
-          );
+        if (productSize) {
+          for (const storeKey of selectedStore) {
+            const productStore = productSize.store.find(
+              (item) => item.nameStore === storeKey
+            );
 
-          if (!updatedSubProduct) {
-            console.error("Subproduct not found:", subProduct._id);
-          }
-        }
+            const foundStore = storeObjects.find(
+              (store) => store.nameStore === storeKey
+            );
 
-        if (selectedStore && selectedStore.length > 0) {
-          for (const storeName of selectedStore) {
-            const store = await StoresModel.findOne({ gbs: storeName });
-
-            if (store) {
-              if (!store.products.includes(productId)) {
-                store.products.push(productId);
-                await store.save();
-              } else {
-                console.log(`already ProductIs`);
-              }
+            if (productStore && foundStore && !updatedStores.has(storeKey)) {
+              const amount = foundStore.amount;
+              productStore.amount += +amount;
+              updatedStores.add(storeKey); // Mark the store as updated
             } else {
-              console.error(`المخزن ${storeName} غير موجود.`);
+              console.error(
+                `Store object not found for nameStore: ${storeKey}`
+              );
             }
           }
         }
-      } catch (error) {
-        console.error("Error updating product:", error);
+      }
+
+      if (productSearch) {
+        await productSearch.save();
+      } else if (productSearch2) {
+        await productSearch2.save();
       }
     }
-
-    let sum = 0;
 
     const productsArray = Object.keys(inputValues).map((productId) => {
       const productData = inputValues[productId];
@@ -243,17 +166,6 @@ route.post("/addPurchases", async (req, res) => {
         }
         return productImage;
       };
-
-      const totalAmount = Object.values(selectedStore).reduce(
-        (acc, storeName) => {
-          const storeAmount = parseInt(productData[storeName]) || 0;
-
-          sum += storeAmount * findPrice(productId);
-
-          return acc + storeAmount;
-        },
-        0
-      );
 
       const products = selectedStore.map((storeName) => {
         const storeAmount = parseInt(productData[storeName]) || 0;

@@ -154,13 +154,13 @@ route.post("/addOrder", async (req, res) => {
       marketer: marketer,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
-      chatMessages: [
-        {
-          admin: [],
-          marketer: [],
-          delivery: [],
-        },
-      ],
+      // chatMessages: [
+      //   {
+      //     admin: [],
+      //     marketer: [],
+      //     delivery: [],
+      //   },
+      // ],
       PhoneCompany: phoneCompany,
       NameCompany: nameCompany,
       ImageURLCompany: imageURLCompany,
@@ -319,13 +319,16 @@ route.post("/addOrderProducts", async (req, res) => {
       ColorCompany: color,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
-      chatMessages: [
-        {
-          admin: [],
-          marketer: [],
-          delivery: [],
-        },
-      ],
+      // chatMessages: [
+      //   {
+      //     message: "",
+      //     person: "",
+      //     valid: "",
+      //     date: "",
+      //     time: "",
+      //     seeMessage: false,
+      //   },
+      // ],
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
@@ -601,7 +604,6 @@ route.post("/editOrderSituation2", async (req, res) => {
         store: store,
       }));
 
-      // // console.log(productsToAdd)
       nameDelivery.productsStore.push(...productsToAdd);
 
       const newNotification = new NotificationsModel({
@@ -659,8 +661,6 @@ route.post("/chatOrder", async (req, res) => {
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     };
-
-    // console.log(JsonText);
 
     await order.save();
     return res.status(200).json({

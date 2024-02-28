@@ -1,7 +1,7 @@
 const db = require("./database");
 const mongoose = require("mongoose");
 
-const Model = require("./models/orders");
+const Model = require("./models/users");
 
 mongoose
   .connect(
@@ -18,7 +18,7 @@ mongoose
       mongoose.disconnect();
     }
   })
-  
+
   .catch((error) => {
     console.error("Error connecting to the database:", error);
   });

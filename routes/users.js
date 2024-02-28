@@ -94,7 +94,6 @@ route.post("/loginMoneySafe", async (req, res) => {
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
 
-  console.log(name, password)
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
