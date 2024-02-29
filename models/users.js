@@ -37,7 +37,10 @@ const Users = new Schema({
     type: [
       {
         idOrder: { type: String },
+        marketer: { type: String },
         money: { type: Number },
+        moneyMarketer: { type: Number },
+        moneyDelivery: { type: Number },
         notes: { type: String },
         date: { type: String },
         time: { type: String },

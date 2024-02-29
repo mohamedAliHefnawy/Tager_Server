@@ -77,7 +77,7 @@ route.post("/addOrder", async (req, res) => {
         { size: newSize },
         { new: true }
       );
-      product.numbersSells = product.numbersSells + 1;
+      product.numbersSells = +product.numbersSells + 1;
       await product.save();
     } else {
       const product2 = await ProductsModel.findOne({
@@ -154,13 +154,6 @@ route.post("/addOrder", async (req, res) => {
       marketer: marketer,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
-      // chatMessages: [
-      //   {
-      //     admin: [],
-      //     marketer: [],
-      //     delivery: [],
-      //   },
-      // ],
       PhoneCompany: phoneCompany,
       NameCompany: nameCompany,
       ImageURLCompany: imageURLCompany,
@@ -319,16 +312,6 @@ route.post("/addOrderProducts", async (req, res) => {
       ColorCompany: color,
       deliveryPrice: deliveryPrice[0],
       situation: "بإنتظار الموافقة",
-      // chatMessages: [
-      //   {
-      //     message: "",
-      //     person: "",
-      //     valid: "",
-      //     date: "",
-      //     time: "",
-      //     seeMessage: false,
-      //   },
-      // ],
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
@@ -478,32 +461,20 @@ route.post("/editOrderSituation2", async (req, res) => {
       nameDelivery.money.push({
         idOrder: idOrder,
         money: orderMoney,
+        marketer: marketer,
+        moneyMarketer: gainMarketer,
+        moneyDelivery: gainAdmin,
         notes: "",
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
         acceptMoney: true,
       });
 
-      nameMarketer.money.push({
-        money: +gainMarketer,
-        notes: "",
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        acceptMoney: false,
-      });
-
       await UsersModel.updateOne(
         { name: delivery },
-        { $pull: { productsStore: idOrder } }
+        { $pull: { productsStore: { productsAll: idOrder } } }
       );
 
-      // payment.money.push({
-      //   value: money.toString(),
-      //   notes: `من خلال تحويل فلوس طلبيات من ${delivery}`,
-      //   person: employee,
-      //   date: new Date().toLocaleDateString(),
-      //   time: new Date().toLocaleTimeString(),
-      // });
       await newNotification.save();
     }
     if (situationOrder === "تم الإسترجاع") {

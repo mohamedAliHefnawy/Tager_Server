@@ -92,15 +92,16 @@ route.post("/addPurchases", async (req, res) => {
             const foundStore = storeObjects.find(
               (store) => store.nameStore === storeKey
             );
-
             if (productStore && foundStore && !updatedStores.has(storeKey)) {
               const amount = foundStore.amount;
               productStore.amount += +amount;
-              updatedStores.add(storeKey); // Mark the store as updated
+              updatedStores.add(storeKey);
             } else {
-              console.error(
-                `Store object not found for nameStore: ${storeKey}`
-              );
+              productSize.store.push({
+                nameStore: foundStore.nameStore,
+                amount: foundStore.amount,
+                _id: foundStore._id,
+              });
             }
           }
         }

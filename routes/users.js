@@ -244,7 +244,15 @@ route.post("/editemployee", async (req, res) => {
 
 route.post("/acceptMoney", async (req, res) => {
   try {
-    const { id, nameDelivery, nameAdmin, money } = req.body;
+    const {
+      id,
+      nameDelivery,
+      nameAdmin,
+      money,
+      marketerMoney,
+      marketer,
+      deliveryMoney,
+    } = req.body;
 
     const notification = await NotificationsModel.findOneAndDelete({
       _id: id,
@@ -252,21 +260,39 @@ route.post("/acceptMoney", async (req, res) => {
 
     const delivery = await UsersModel.findOne({ name: nameDelivery });
     const admin = await UsersModel.findOne({ name: nameAdmin });
+    const marketerrr = await UsersModel.findOne({ name: marketer });
     const payment = await PaymentModel.findOne({ name: "فوادفون كاش" });
 
     payment.money.push({
-      value: money.toString(),
+      value: (money - deliveryMoney).toString(),
       notes: `من خلال إستلام ${nameAdmin} فلوس طلبية `,
       person: nameAdmin,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
 
+    payment.money.push({
+      value: deliveryMoney.toString(),
+      notes: `ربح طلبية`,
+      person: nameAdmin,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
+    marketerrr.money.push({
+      money: marketerMoney,
+      notes: "",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      acceptMoney: true,
+    });
+
     const save1 = await delivery.save();
     const save2 = await admin.save();
+    const save3 = await marketerrr.save();
     await payment.save();
 
-    if (notification && save1 && save2) {
+    if (notification && save1 && save2 && save3) {
       return res.status(200).send("yes");
     }
   } catch (error) {

@@ -1,7 +1,7 @@
 const db = require("./database");
 const mongoose = require("mongoose");
 
-const Model = require("./models/users");
+const Model = require("./models/notifications");
 
 mongoose
   .connect(

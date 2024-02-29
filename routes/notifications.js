@@ -19,7 +19,7 @@ route.get("/getNotifications", async (req, res) => {
 });
 
 route.post("/addNotification", async (req, res) => {
-  const { message, date, time, notes, person } = req.body;
+  const { message, date, time, notes, person, marketer } = req.body;
 
   const nameDelivery = await UsersModel.findOne({ name: person });
 
@@ -33,6 +33,7 @@ route.post("/addNotification", async (req, res) => {
   const newNotification = new NotificationsModel({
     person: person || "",
     message: message,
+    marketer: marketer,
     date: date,
     time: time,
     notes: notes || "",
