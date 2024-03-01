@@ -264,25 +264,30 @@ route.post("/addOrderProducts", async (req, res) => {
         }
       }
     }
-    function extractLinks(arr) {
-      let links = [];
-      if (Array.isArray(arr)) {
-        arr.forEach((item) => {
-          if (Array.isArray(item)) {
-            links = links.concat(extractLinks(item));
-          } else {
-            links.push(item);
-          }
-        });
-      }
 
-      return links;
-    }
-    const allLinks = extractLinks(products.map((image) => image.image));
+    // function extractLinks(arr) {
+    //   let links = [];
+    //   if (Array.isArray(arr)) {
+    //     arr.forEach((item) => {
+    //       if (Array.isArray(item)) {
+    //         links = links.concat(extractLinks(item));
+    //       } else {
+    //         links.push(item);
+    //       }
+    //     });
+    //   }
+
+    //   return links;
+    // }
+
+    // const allLinks = extractLinks(products.map((image) => image.image));
+
+    // console.log(allLinks[0]);
+
     const dataProducts = products.map((product, index) => ({
       idProduct: product._id,
       nameProduct: product.name,
-      imageProduct: allLinks[index],
+      imageProduct: product.image[0],
       amount: amountAndPrice[product._id]?.quantity || 0,
       price: amountAndPrice[product._id]?.price || 0,
       gainMarketer: userValidity !== "مندوب تسويق" ? 0 : product.gainMarketer,
@@ -292,6 +297,8 @@ route.post("/addOrderProducts", async (req, res) => {
           : -product.price1 + product.price2 - product.gainMarketer,
       size: sizes.find((item2) => item2[0] === product._id)?.[1],
     }));
+
+    console.log(dataProducts);
 
     const order = new OrdersModel({
       nameClient: nameClient,
@@ -320,6 +327,7 @@ route.post("/addOrderProducts", async (req, res) => {
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
+    
 
     if (order) {
       nameMarketer.orders.push(order._id);
