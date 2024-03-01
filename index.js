@@ -20,6 +20,7 @@ const scanner = require("./routes/scanner");
 const notifications = require("./routes/notifications");
 const returns = require("./routes/returns");
 const analysis = require("./routes/analysis");
+const withdrawalRequests = require("./routes/withdrawalRequests");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -43,6 +44,7 @@ app.use("/scanner", scanner);
 app.use("/notifications", notifications);
 app.use("/returns", returns);
 app.use("/analysis", analysis);
+app.use("/withdrawalRequests", withdrawalRequests);
 
 app.get("/", function (req, res) {
   res.send("Server is online");

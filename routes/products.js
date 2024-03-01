@@ -161,9 +161,10 @@ route.post("/editProduct", async (req, res) => {
 
       return links;
     }
+
     const newSizeProduct1 = sizeProduct.map((sizeProduct) => ({
       size: sizeProduct.size,
-      // amount: 0,
+      amount: 0,
     }));
 
     const product = await ProductsModel.findOne({ _id: idProductt });
@@ -194,7 +195,6 @@ route.post("/editProduct", async (req, res) => {
 
     const save1 = await product.save();
     if (save1) {
-      console.log(1);
       return res.status(200).send("yes");
     }
   } catch (error) {
@@ -272,9 +272,7 @@ route.post("/returnProductsInStore", async (req, res) => {
             { $set: { "products.$.size": newSize } }
           );
           return res.status(200).send("yes");
-        } else {
-          console.log(2);
-        }
+        } 
       }
     }
   } catch (error) {

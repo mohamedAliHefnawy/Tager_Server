@@ -26,8 +26,6 @@ route.post("/login", async (req, res) => {
     if (!admin) {
       return res.send("notFoundAdmin");
     }
-    console.log(admin.password);
-
     const comparePassword = await bcyrbt.compare(password, admin.password);
     if (admin.password !== password ) {
       return res.send("noPassword");

@@ -327,7 +327,6 @@ route.post("/addOrderProducts", async (req, res) => {
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     });
-    
 
     if (order) {
       nameMarketer.orders.push(order._id);
@@ -536,30 +535,32 @@ route.post("/editOrderSituation2", async (req, res) => {
           !returnOrders.some((item2) => item2.idProduct === item.idProduct)
       );
 
-      const gainMarketer = NoReturnOrders.reduce(
+
+      const gainMarketer1 = NoReturnOrders.reduce(
         (calac, alt) => calac + alt.gainMarketer * alt.amount,
         0
       );
-      const orderMoney = NoReturnOrders.reduce(
+
+      const gainAdmin1 = NoReturnOrders.reduce(
+        (calac, alt) => calac + alt.gainAdmin * alt.amount,
+        0
+      );
+
+      const orderMoney1 = NoReturnOrders.reduce(
         (calac, alt) => calac + alt.price * alt.amount,
         0
       );
 
       nameDelivery.money.push({
         idOrder: idOrder,
-        money: orderMoney,
+        money: orderMoney1,
+        marketer: marketer,
+        moneyMarketer: gainMarketer1,
+        moneyDelivery: gainAdmin1,
         notes: "",
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
         acceptMoney: true,
-      });
-
-      nameMarketer.money.push({
-        money: +gainMarketer,
-        notes: "",
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString(),
-        acceptMoney: false,
       });
 
       order.situationSteps.push({
@@ -573,7 +574,7 @@ route.post("/editOrderSituation2", async (req, res) => {
         { $pull: { productsStore: { productsAll: idOrder } } }
       );
 
-      const productsToAdd = NoReturnOrders.map((item) => ({
+      const productsToAdd = returnOrders.map((item) => ({
         idProduct: item.idProduct,
         nameProduct: item.nameProduct,
         imageProduct: item.imageProduct,

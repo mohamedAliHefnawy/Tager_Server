@@ -1,20 +1,22 @@
 const express = require("express");
 const route = express.Router();
-const PaymentModel = require("../models/payment");
+const WithdrawalRequestsModel = require("../models/withdrawalRequests");
+const UsersModel = require("../models/users");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 
-route.get("/getpayment", async (req, res) => {
+route.get("/getwithdrawalRequests", async (req, res) => {
   try {
-    const payment = await PaymentModel.find().maxTimeMS(20000);
-    const token = jwt.sign({ payment }, config.secretKey);
-    res.json({ token, payment });
+    const withdrawalRequests = await WithdrawalRequestsModel.find().maxTimeMS(
+      20000
+    );
+    const token = jwt.sign({ withdrawalRequests }, config.secretKey);
+    res.json({ token, withdrawalRequests });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
-
 
 route.get("/getpayment/:id", async (req, res) => {
   const paymentId = req.params.id;
@@ -33,19 +35,32 @@ route.get("/getpayment/:id", async (req, res) => {
   }
 });
 
-route.post("/addpayment", async (req, res) => {
-  const { name } = req.body;
-  const payment = await PaymentModel.findOne({ name });
-  if (payment) {
-    return res.send("no");
-  }
-  const newPayment = new PaymentModel({
-    name: name,
-    active: 1,
+route.post("/addwithdrawalRequest", async (req, res) => {
+  const { money, phoneNumber, selectedValuePayment, marketer } = req.body;
+
+  console.log(marketer);
+
+  const withdrawalRequest = new WithdrawalRequestsModel({
+    sumMoney: money,
+    marketer: marketer,
+    pymentMethod: selectedValuePayment,
+    phoneNumber: phoneNumber,
+    situation: "في الإنتظار",
   });
 
-  const save = await newPayment.save();
-  if (save) {
+  const Marketer = await UsersModel.findOne({ name: marketer });
+  Marketer.money.push({
+    money: -parseInt(money),
+    notes: "",
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
+    acceptMoney: true,
+  });
+
+  const save1 = await withdrawalRequest.save();
+  const save2 = await Marketer.save();
+
+  if (save1 && save2) {
     return res.send("yes");
   }
   console.error(error);

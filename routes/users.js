@@ -302,15 +302,28 @@ route.post("/acceptMoney", async (req, res) => {
 
 route.post("/declineMoney", async (req, res) => {
   try {
-    const { id, nameDelivery, nameAdmin, money } = req.body;
+    const {
+      id,
+      nameDelivery,
+      nameAdmin,
+      money,
+      marketerMoney,
+      marketer,
+      deliveryMoney,
+    } = req.body;
 
     const notification = await NotificationsModel.findOneAndDelete({
       _id: id,
     });
+
     const delivery = await UsersModel.findOne({ name: nameDelivery });
 
     delivery.money.push({
+      idOrder: "",
       money: money,
+      marketer: marketer,
+      moneyMarketer: marketerMoney,
+      moneyDelivery: deliveryMoney,
       notes: ` الأدمن ${nameAdmin} قد رفض إستلام ${money} د.ل `,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
