@@ -77,6 +77,7 @@ route.post("/addOrder", async (req, res) => {
         { size: newSize },
         { new: true }
       );
+
       product.numbersSells = +product.numbersSells + 1;
       await product.save();
     } else {
@@ -107,8 +108,6 @@ route.post("/addOrder", async (req, res) => {
           { "products._id": idProduct },
           { $set: { "products.$.size": newSize } }
         );
-        // productToUpdate.numbersSells = productToUpdate.numbersSells + 1;
-        // await productToUpdate.save();
       } else {
         console.log(2);
       }
@@ -226,6 +225,13 @@ route.post("/addOrderProducts", async (req, res) => {
           return sizeItem;
         });
 
+        console.log(product.numbersSells)
+
+        product.numbersSells = +product.numbersSells + 1;
+        await product.save();
+
+        
+
         await ProductsModel.findByIdAndUpdate(
           productId,
           { size: newSize },
@@ -254,6 +260,10 @@ route.post("/addOrderProducts", async (req, res) => {
 
             return sizeItem;
           });
+
+          productToUpdate.numbersSells = +productToUpdate.numbersSells + 1;
+          await product2.save();
+
 
           await ProductsModel.updateOne(
             { "products._id": productId },
@@ -534,7 +544,6 @@ route.post("/editOrderSituation2", async (req, res) => {
         (item) =>
           !returnOrders.some((item2) => item2.idProduct === item.idProduct)
       );
-
 
       const gainMarketer1 = NoReturnOrders.reduce(
         (calac, alt) => calac + alt.gainMarketer * alt.amount,

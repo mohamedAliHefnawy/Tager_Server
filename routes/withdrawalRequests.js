@@ -1,6 +1,7 @@
 const express = require("express");
 const route = express.Router();
 const WithdrawalRequestsModel = require("../models/withdrawalRequests");
+const PaymentModel = require("../models/payment");
 const UsersModel = require("../models/users");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
@@ -18,17 +19,19 @@ route.get("/getwithdrawalRequests", async (req, res) => {
   }
 });
 
-route.get("/getpayment/:id", async (req, res) => {
-  const paymentId = req.params.id;
+route.get("/getWithdrawalRequestsMarketer/:id", async (req, res) => {
+  const marketer = req.params.id;
   try {
-    const payment = await PaymentModel.findById(paymentId);
-
-    if (!payment) {
+    const withdrawalRequestsMarketer = await WithdrawalRequestsModel.find({
+      marketer: marketer,
+    });
+    if (!withdrawalRequestsMarketer) {
       return res
         .status(404)
         .json({ message: "لم يتم العثور على بيانات الدفع" });
     }
-    res.json(payment);
+    const token = jwt.sign({ withdrawalRequestsMarketer }, config.secretKey);
+    res.json({ token, withdrawalRequestsMarketer });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "حدث خطأ أثناء جلب بيانات الدفع" });
@@ -37,8 +40,6 @@ route.get("/getpayment/:id", async (req, res) => {
 
 route.post("/addwithdrawalRequest", async (req, res) => {
   const { money, phoneNumber, selectedValuePayment, marketer } = req.body;
-
-  console.log(marketer);
 
   const withdrawalRequest = new WithdrawalRequestsModel({
     sumMoney: money,
@@ -67,16 +68,38 @@ route.post("/addwithdrawalRequest", async (req, res) => {
   return res.status(500).send("no");
 });
 
-route.post("/editpayment", async (req, res) => {
+route.post("/confirmPayment", async (req, res) => {
   try {
-    const { id, name, active, image } = req.body;
-    const payment = await PaymentModel.findOne({ _id: id });
-    payment.name = name;
-    payment.active = active;
-    payment.image = image;
+    const {
+      idWithdrawalRequests,
+      PaymentWithdrawalRequests,
+      moneyWithdrawalRequests,
+      nameAdmin,
+    } = req.body;
 
-    await payment.save();
-    return res.status(200).send("yes");
+    const payment = await PaymentModel.findOne({
+      name: PaymentWithdrawalRequests,
+    });
+    const request = await WithdrawalRequestsModel.findOne({
+      _id: idWithdrawalRequests,
+    });
+
+    request.situation = "تم التحويل";
+
+    payment.money.push({
+      value: -parseInt(moneyWithdrawalRequests),
+      notes: "تحويل أموال لمندوب تسويق",
+      person: nameAdmin,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
+    const save1 = await payment.save();
+    const save2 = await request.save();
+
+    if (save1 && save2) {
+      return res.status(200).send("yes");
+    }
   } catch (error) {
     return res.status(500).send("no");
   }
