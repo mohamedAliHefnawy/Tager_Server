@@ -94,6 +94,7 @@ route.post("/loginMoneySafe", async (req, res) => {
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
 
+
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
@@ -123,6 +124,7 @@ route.post("/signUp", async (req, res) => {
 
   const hashedPassword = await bcyrbt.hash(password, saltRounds);
 
+  
   const newUser = new UsersModel({
     name: name,
     image: "",

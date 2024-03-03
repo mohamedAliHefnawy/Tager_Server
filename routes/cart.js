@@ -16,47 +16,53 @@ route.get("/getCart", async (req, res) => {
   }
 });
 
-route.get("/getProductsInCart/:user", async (req, res) => {
+route.get("/getProductsInCart/:id", async (req, res) => {
   try {
-    const userName = req.params.user;
+    const userName = req.params.id || "";
     const cart = await CartModel.findOne({
       "user.username": userName,
     });
-    const productIds = cart.user.map((product) => product.products);
-    const separatedData = productIds[0].map((item) => {
-      const [id] = item.split("-");
-      return [id];
-    });
 
-    const separatedData2 = productIds[0].map((item) => {
-      const [id, size] = item.split("-");
-      return [id, size];
-    });
+    if (cart && cart.user) {
+      const productIds = cart.user.map((product) => product.products);
+      const separatedData = productIds[0].map((item) => {
+        const [id] = item.split("-");
+        return [id];
+      });
 
-    const result = separatedData.map((item) => item[0]);
-    const products = await ProductsModel.find({
-      products: {
-        $elemMatch: {
-          _id: { $in: separatedData },
+      const separatedData2 = productIds[0].map((item) => {
+        const [id, size] = item.split("-");
+        return [id, size];
+      });
+
+      const result = separatedData.map((item) => item[0]);
+      const products = await ProductsModel.find({
+        products: {
+          $elemMatch: {
+            _id: { $in: separatedData },
+          },
         },
-      },
-    });
-    const products2 = await ProductsModel.find({
-      _id: { $in: separatedData },
-    });
-    const filteredProducts = products.map((item) =>
-      item.products.filter((product) => result.includes(product._id.toString()))
-    );
+      });
+      const products2 = await ProductsModel.find({
+        _id: { $in: separatedData },
+      });
+      const filteredProducts = products.map((item) =>
+        item.products.filter((product) =>
+          result.includes(product._id.toString())
+        )
+      );
 
-    const filteredProducts2 = filteredProducts.flatMap((item) => item);
-
-    const combinedProducts = [...products2, ...filteredProducts2];
-    const combinedProducts2 = [...separatedData2];
-    const token = jwt.sign(
-      { combinedProducts, combinedProducts2 },
-      config.secretKey
-    );
-    res.json({ token, combinedProducts, combinedProducts2 });
+      const filteredProducts2 = filteredProducts.flatMap((item) => item);
+      const combinedProducts = [...products2, ...filteredProducts2];
+      const combinedProducts2 = [...separatedData2];
+      const token = jwt.sign(
+        { combinedProducts, combinedProducts2 },
+        config.secretKey
+      );
+      res.json({ token, combinedProducts, combinedProducts2 });
+    } else {
+      res.status(404).send("Cart not found");
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

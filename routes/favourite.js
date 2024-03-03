@@ -16,35 +16,45 @@ route.get("/getFavourite", async (req, res) => {
   }
 });
 
-route.get("/getProductsInFavourite/:user", async (req, res) => {
+route.get("/getProductsInFavourite/:id", async (req, res) => {
   try {
-    const userName = req.params.user;
+    const userName = req.params.id || "";
+
     const favourite = await FavouriteModel.findOne({
       "user.username": userName,
     });
-    const productIds = favourite.user.map((product) => product.products);
-    const separatedData = productIds[0].map((item) => {
-      const [id] = item.split("-");
-      return [id];
-    });
-    const result = separatedData.map((item) => item[0]);
-    const products = await ProductsModel.find({
-      products: {
-        $elemMatch: {
-          _id: { $in: separatedData },
+
+    if (favourite && favourite.user) {
+      const productIds = favourite.user.map((product) => product.products);
+      // ... rest of the code const productIds = favourite.user.map((product) => product.products);
+      const separatedData = productIds[0].map((item) => {
+        const [id] = item.split("-");
+        return [id];
+      });
+      const result = separatedData.map((item) => item[0]);
+      const products = await ProductsModel.find({
+        products: {
+          $elemMatch: {
+            _id: { $in: separatedData },
+          },
         },
-      },
-    });
-    const products2 = await ProductsModel.find({
-      _id: { $in: separatedData },
-    });
-    const filteredProducts = products.map((item) =>
-      item.products.filter((product) => result.includes(product._id.toString()))
-    );
-    const filteredProducts2 = filteredProducts.flatMap((item) => item);
-    const combinedProducts = [...products2, ...filteredProducts2];
-    const token = jwt.sign({ combinedProducts }, config.secretKey);
-    res.json({ token, combinedProducts });
+      });
+      const products2 = await ProductsModel.find({
+        _id: { $in: separatedData },
+      });
+      const filteredProducts = products.map((item) =>
+        item.products.filter((product) =>
+          result.includes(product._id.toString())
+        )
+      );
+      const filteredProducts2 = filteredProducts.flatMap((item) => item);
+      const combinedProducts = [...products2, ...filteredProducts2];
+      const token = jwt.sign({ combinedProducts }, config.secretKey);
+      res.json({ token, combinedProducts });
+    } else {
+      // Handle the case when 'favourite' or 'favourite.user' is null
+      res.status(404).send("Favourite not found");
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
