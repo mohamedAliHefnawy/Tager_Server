@@ -56,6 +56,7 @@ route.post("/signUp", async (req, res) => {
     validity: "marketer",
   });
 
+
   const save = await newUser.save();
   if (save) {
     return res.send("yes");
