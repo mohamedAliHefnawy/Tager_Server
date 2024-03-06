@@ -177,7 +177,7 @@ route.post("/editProduct", async (req, res) => {
     product.price3 = priceProduct3;
     product.gainMarketer = priceProduct4;
     product.color = colorProductMain;
-    product.size = newSizeProduct1;
+    // product.size = newSizeProduct1;
     product.products = rows.map((row) => ({
       name: nameProduct,
       catogry: selectedCategory,
@@ -187,10 +187,10 @@ route.post("/editProduct", async (req, res) => {
       price3: +row.regularCustomer,
       gainMarketer: +row.gainMarketer,
       color: row.color,
-      size: row.dynamicInputs.map((sizeValue) => ({
-        size: sizeValue,
-        amount: 0,
-      })),
+      // size: row.dynamicInputs.map((sizeValue) => ({
+      //   size: sizeValue,
+      //   amount: 0,
+      // })),
     }));
 
     const save1 = await product.save();
@@ -272,7 +272,7 @@ route.post("/returnProductsInStore", async (req, res) => {
             { $set: { "products.$.size": newSize } }
           );
           return res.status(200).send("yes");
-        } 
+        }
       }
     }
   } catch (error) {
