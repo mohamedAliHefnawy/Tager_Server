@@ -21,6 +21,8 @@ route.get("/getOrder/:id", async (req, res) => {
 
 route.get("/getOrders/:id", async (req, res) => {
   const deliveryName = req.params.id;
+
+  console.log(deliveryName);
   try {
     const delivery = await UsersModel.findOne({ name: deliveryName }).maxTimeMS(
       20000

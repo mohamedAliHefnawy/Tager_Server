@@ -94,7 +94,6 @@ route.post("/loginMoneySafe", async (req, res) => {
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
 
-
   try {
     const user = await UsersModel.findOne({ name });
     if (!user) {
@@ -123,8 +122,6 @@ route.post("/signUp", async (req, res) => {
   }
 
   const hashedPassword = await bcyrbt.hash(password, saltRounds);
-
-  
   const newUser = new UsersModel({
     name: name,
     image: "",
@@ -151,6 +148,48 @@ route.post("/editUser", async (req, res) => {
     const {
       imageURLMarketr,
       name,
+      password,
+      passwordNew,
+      phoneMarketer,
+      nameCompany,
+      phoneCompany,
+      color,
+      imageURLCompany,
+    } = req.body;
+
+    const user = await UsersModel.findOne({ name: name });
+    if (user) {
+      const comparePassword = await bcyrbt.compare(password, user.password);
+      if (!comparePassword) {
+        return res.send("noPaswordCom");
+      } else {
+        const hashedPassword = await bcyrbt.hash(
+          passwordNew === "" ? password : passwordNew,
+          saltRounds
+        );
+        user.image = imageURLMarketr;
+        user.phone = phoneMarketer;
+        user.password = hashedPassword;
+        user.nameCompany = nameCompany;
+        user.phoneCompany = phoneCompany;
+        user.imageCompany = imageURLCompany;
+        user.colorCompany = color;
+        const save = await user.save();
+        if (save) {
+          return res.status(200).send("yes");
+        }
+      }
+    }
+  } catch (error) {
+    return res.status(500).send("no");
+  }
+});
+
+route.post("/editUserPasswordWallet", async (req, res) => {
+  try {
+    const {
+      imageURLMarketr,
+      name,
       newName,
       password,
       passwordNew,
@@ -173,10 +212,11 @@ route.post("/editUser", async (req, res) => {
           passwordMoneyStore,
           saltRounds
         );
+
         user.image = imageURLMarketr;
         user.phone = phoneMarketer;
         user.password = hashedPassword;
-        user.passwordMoneyStore = hashedPassword2;
+        user.passwordMoneyStore = hashedPassword;
         user.nameCompany = nameCompany;
         user.phoneCompany = phoneCompany;
         user.imageCompany = imageURLCompany;
