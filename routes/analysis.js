@@ -85,13 +85,9 @@ route.get("/getBestProductsSelling", async (req, res) => {
     const productsArrays = bestProductsSelling.map(
       (product) => product.products
     );
-
-    // console.log(bestProductsSelling)
     const allProducts = [].concat(...productsArrays);
     let arayAllProducts = [];
-
     let Id = "";
-
     for (product of bestProductsSelling) {
       Id = product._id;
       arayAllProducts.push({
@@ -136,7 +132,6 @@ route.get("/getBestProductsSelling", async (req, res) => {
 route.get("/getNumberOrdersInYear", async (req, res) => {
   try {
     const orders = await OrdersModel.find();
-    // console.log(orders.map((item) => item.situationSteps[0].date));
     const orderDates = orders.map(
       (item) => new Date(item.situationSteps[0].date)
     );

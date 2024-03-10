@@ -43,8 +43,6 @@ route.post("/addNotification", async (req, res) => {
   if (save) {
     return res.send("yes");
   }
-  // console.error(error);
-  // return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
 });
 
 route.post("/addNotification2", async (req, res) => {
@@ -62,8 +60,6 @@ route.post("/addNotification2", async (req, res) => {
   if (save) {
     return res.send("yes");
   }
-  // console.error(error);
-  // return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
 });
 
 module.exports = route;
