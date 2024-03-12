@@ -4,12 +4,12 @@ const Stores = new Schema({
   name: {
     type: String,
   },
-  gbs: {
-    type: String,
-  },
-  priceDelivery: {
-    type: Number,
-  },
+  details: [
+    {
+      gbs: { type: String },
+      price: { type: Number },
+    },
+  ],
   products: {
     type: [{}],
     default: [],

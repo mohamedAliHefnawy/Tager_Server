@@ -49,7 +49,7 @@ route.post("/addPurchases", async (req, res) => {
 
       if (selectedStore && selectedStore.length > 0) {
         for (const storeName of selectedStore) {
-          const store = await StoresModel.findOne({ gbs: storeName });
+          const store = await StoresModel.findOne({ name: storeName });
 
           if (store && !store.products.includes(productId)) {
             store.products.push(productId);
@@ -74,7 +74,7 @@ route.post("/addPurchases", async (req, res) => {
         "products._id": productId,
       });
 
-      const updatedStores = new Set(); // To track updated stores
+      const updatedStores = new Set(); 
 
       for (const sizeKey of selectedSize) {
         const productSize =

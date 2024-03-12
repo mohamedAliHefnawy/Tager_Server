@@ -19,15 +19,17 @@ route.get("/getStores", async (req, res) => {
 
 route.post("/addStore", async (req, res) => {
   try {
-    const { nameStore, gbsStore, priceDelivery } = req.body;
+    const { nameStore, additionalInputs } = req.body;
     const store = await StoresModel.findOne({ name: nameStore });
     if (store) {
       return res.status(200).send("nameUse");
     }
     const newStore = new StoresModel({
       name: nameStore,
-      gbs: gbsStore,
-      priceDelivery: +priceDelivery,
+      details: additionalInputs.map((input) => ({
+        gbs: input.gbsStore,
+        price: parseInt(input.priceDelivery),
+      })),
     });
     await newStore.save();
     return res.status(200).send("yes");
