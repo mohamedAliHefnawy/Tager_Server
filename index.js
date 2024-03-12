@@ -21,6 +21,7 @@ const notifications = require("./routes/notifications");
 const returns = require("./routes/returns");
 const analysis = require("./routes/analysis");
 const withdrawalRequests = require("./routes/withdrawalRequests");
+const Kasheer = require("./routes/Kasheer");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -45,6 +46,7 @@ app.use("/notifications", notifications);
 app.use("/returns", returns);
 app.use("/analysis", analysis);
 app.use("/withdrawalRequests", withdrawalRequests);
+app.use("/Kasheer", Kasheer);
 
 app.get("/", function (req, res) {
   res.send("Server is online");
