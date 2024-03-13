@@ -101,7 +101,7 @@ route.get("/getProductsInStore/:id", async (req, res) => {
     }
 
     const final = combinedProducts2.flatMap((item) => item);
-    const Store = store.gbs;
+    const Store = store.name;
     const token = jwt.sign({ final, Store }, config.secretKey);
     res.json({ token, final, Store });
   } catch (error) {
