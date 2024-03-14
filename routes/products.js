@@ -226,12 +226,14 @@ route.post("/returnProductsInStore", async (req, res) => {
 
       const product = await ProductsModel.findOne({ _id: idProduct });
 
+      console.log(inputValues[idProduct].amount);
+
       if (product) {
         const newSize = product.size.map((sizeItem) => {
           if (sizeItem.size === size) {
             const newStore = sizeItem.store.map((storeItem) => {
               if (storeItem.nameStore === store) {
-                storeItem.amount += amount;
+                storeItem.amount += +amount;
               }
               return storeItem;
             });
@@ -240,11 +242,16 @@ route.post("/returnProductsInStore", async (req, res) => {
           return sizeItem;
         });
 
-        await ProductsModel.findByIdAndUpdate(
-          idProduct,
-          { size: newSize },
-          { new: true }
+        await ProductsModel.updateOne(
+          { _id: idProduct },
+          { $set: { size: newSize } }
         );
+
+        // await ProductsModel.findByIdAndUpdate(
+        //   idProduct,
+        //   { size: newSize },
+        //   { new: true }
+        // );
         return res.status(200).send("yes");
       } else {
         const product2 = await ProductsModel.findOne({
@@ -254,7 +261,6 @@ route.post("/returnProductsInStore", async (req, res) => {
           const productToUpdate = product2.products.filter(
             (item) => item._id.toString() === idProduct
           );
-
           const newSize = productToUpdate[0].size.map((sizeItem) => {
             if (sizeItem.size === size) {
               const newStore = sizeItem.store.map((storeItem) => {

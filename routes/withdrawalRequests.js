@@ -47,6 +47,8 @@ route.post("/addwithdrawalRequest", async (req, res) => {
     pymentMethod: selectedValuePayment,
     phoneNumber: phoneNumber,
     situation: "في الإنتظار",
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
   });
 
   const Marketer = await UsersModel.findOne({ name: marketer });

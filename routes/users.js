@@ -47,6 +47,7 @@ route.get("/getUser/:id", async (req, res) => {
 
 route.get("/getDeliveryProductStore/:id", async (req, res) => {
   const deliveryId = req.params.id;
+
   try {
     const delivery = await UsersModel.findOne({ _id: deliveryId }).maxTimeMS(
       20000
@@ -60,10 +61,24 @@ route.get("/getDeliveryProductStore/:id", async (req, res) => {
     );
 
     const ordersInStore = await OrdersModel.find({ _id: { $in: ordersIds } });
-    const AllData = ordersInStore.concat(products);
 
-    const token = jwt.sign({ AllData }, config.secretKey);
-    res.json({ token, AllData });
+    const productsReturnWaiting = ordersInStore.map((item) => ({
+      idProduct: item.id,
+      products: item.products,
+      nameClient: item.nameClient,
+      phone1Client: item.phone1Client,
+      phone2Client: item.phone2Client,
+      address: item.address,
+      marketer: item.marketer,
+    }));
+    
+
+
+    const AllData = productsReturnWaiting;
+    productsReturn = products;
+
+    const token = jwt.sign({ AllData, productsReturn }, config.secretKey);
+    res.json({ token, AllData, productsReturn });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

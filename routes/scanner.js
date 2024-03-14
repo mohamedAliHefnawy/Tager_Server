@@ -7,6 +7,7 @@ const saltRounds = 10;
 const UsersModel = require("../models/users");
 const OrdersModel = require("../models/orders");
 
+
 route.get("/getOrder/:id", async (req, res) => {
   const orderId = req.params.id;
   try {
@@ -78,6 +79,7 @@ route.post("/addOrderWithDelivery", async (req, res) => {
   if (isIdOrderExists) {
     return res.send("idOrder already exists");
   }
+  
   delivery.orders.push(idOrder);
   delivery.productsStore.push({ productsAll: idOrder });
   order.situationSteps.push({

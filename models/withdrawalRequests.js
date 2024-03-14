@@ -6,6 +6,8 @@ const WithdrawalRequests = new Schema({
   pymentMethod: { type: String },
   phoneNumber: { type: String },
   situation: { type: String },
+  date: { type: String },
+  time: { type: String },
 });
 
 const WithdrawalRequestsModel = model("withdrawalRequests", WithdrawalRequests);
