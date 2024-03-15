@@ -7,6 +7,7 @@ const saltRounds = 10;
 const MoneyTransfersModel = require("../models/moneyTransfers");
 const UsersModel = require("../models/users");
 const PaymentModel = require("../models/payment");
+const OrdersModel = require("../models/orders");
 
 route.get("/getMoneyTransfers", async (req, res) => {
   try {
@@ -59,10 +60,9 @@ route.post("/acceptMoney", async (req, res) => {
       selectedValuePayment,
     } = req.body;
 
-    console.log(idMoneyTransfer);
-
     const nameMarketer = await UsersModel.findOne({ name: marketer });
     const payment = await PaymentModel.findOne({ name: selectedValuePayment });
+    const order = await OrdersModel.findOne({ _id: idOrder });
     const moneyTransfer = await MoneyTransfersModel.findOne({
       _id: idMoneyTransfer,
     });
@@ -90,22 +90,26 @@ route.post("/acceptMoney", async (req, res) => {
       time: new Date().toLocaleTimeString(),
     });
 
-    moneyTransfer.money.forEach(async (item, index) => {
-      if (item._id.toString() === idMoney) {
-        moneyTransfer.money.splice(index, 1);
-        await moneyTransfer.save();
-        return;
-      }
-
-      if (moneyTransfer.money.length === 0) {
-        await MoneyTransfersModel.findByIdAndDelete(idMoneyTransfer);
-      }
+    order.situationSteps.push({
+      situation: "تم إستلام الكاش",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
     });
+
+    moneyTransfer.money = moneyTransfer.money.filter(
+      (item) => item._id.toString() !== idMoney
+    );
+
+    if (moneyTransfer.money.length === 0) {
+      await MoneyTransfersModel.findByIdAndDelete(idMoneyTransfer);
+    }
 
     const save1 = await nameMarketer.save();
     const save2 = await payment.save();
+    const save3 = await moneyTransfer.save();
+    const save4 = await order.save();
 
-    if (save1 && save2) {
+    if (save1 && save2 && save3) {
       return res.status(200).send("yes");
     }
   } catch (error) {
