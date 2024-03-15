@@ -56,6 +56,8 @@ route.post("/addOrder", async (req, res) => {
       deliveryPrice,
     } = req.body;
 
+    console.log(deliveryPrice);
+
     const product = await ProductsModel.findOne({ _id: idProduct });
     const nameMarketer = await UsersModel.findOne({ name: marketer });
 
@@ -151,7 +153,7 @@ route.post("/addOrder", async (req, res) => {
       DeliveryName: "",
       DeliveryPhone: "",
       marketer: marketer,
-      deliveryPrice: deliveryPrice[0],
+      deliveryPrice: deliveryPrice,
       situation: "بإنتظار الموافقة",
       PhoneCompany: phoneCompany,
       NameCompany: nameCompany,
@@ -258,7 +260,6 @@ route.post("/addOrderProducts", async (req, res) => {
           productToUpdate.numbersSells = +productToUpdate.numbersSells + 1;
           await product2.save();
 
-
           await ProductsModel.updateOne(
             { "products._id": productId },
             { $set: { "products.$.size": newSize } }
@@ -300,7 +301,7 @@ route.post("/addOrderProducts", async (req, res) => {
       NameCompany: nameCompany,
       ImageURLCompany: imageURLCompany,
       ColorCompany: color,
-      deliveryPrice: deliveryPrice[0],
+      deliveryPrice: deliveryPrice,
       situation: "بإنتظار الموافقة",
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
@@ -401,7 +402,7 @@ route.post("/editOrderSituation2", async (req, res) => {
       idOrder,
       situationOrder,
       orderMoney,
-      message,
+      deliveryPrice,
       date,
       time,
       notes,
@@ -409,10 +410,6 @@ route.post("/editOrderSituation2", async (req, res) => {
       store,
       returnOrders,
       noReturnOrders,
-      nameClient,
-      phone1Client,
-      phone2Client,
-      address,
     } = req.body;
 
     const productsNotInReturnOrders = products.filter(
@@ -422,15 +419,9 @@ route.post("/editOrderSituation2", async (req, res) => {
         )
     );
 
-    const totalPrice = productsNotInReturnOrders.reduce(
-      (calc, alt) => calc + alt.price * alt.amount,
-      0
-    );
-
     const order = await OrdersModel.findOne({ _id: idOrder });
     const nameDelivery = await UsersModel.findOne({ name: delivery });
     const nameMarketer = await UsersModel.findOne({ name: marketer });
-    // const payment = await PaymentModel.findOne({ name: "فوادفون كاش" });
 
     if (situationOrder === "تم التوصيل") {
       const newNotification = new NotificationsModel({
@@ -450,10 +441,10 @@ route.post("/editOrderSituation2", async (req, res) => {
 
       nameDelivery.money.push({
         idOrder: idOrder,
-        money: orderMoney,
+        money: orderMoney - deliveryPrice,
         marketer: marketer,
         moneyMarketer: gainMarketer,
-        moneyDelivery: gainAdmin,
+        moneyAdmin: gainAdmin,
         notes: "",
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
@@ -535,10 +526,10 @@ route.post("/editOrderSituation2", async (req, res) => {
 
       nameDelivery.money.push({
         idOrder: idOrder,
-        money: orderMoney1,
+        money: orderMoney1 - deliveryPrice,
         marketer: marketer,
         moneyMarketer: gainMarketer1,
-        moneyDelivery: gainAdmin1,
+        moneyAdmin: gainAdmin1,
         notes: "",
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),

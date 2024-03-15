@@ -22,6 +22,7 @@ const returns = require("./routes/returns");
 const analysis = require("./routes/analysis");
 const withdrawalRequests = require("./routes/withdrawalRequests");
 const Kasheer = require("./routes/Kasheer");
+const moneyTransfers = require("./routes/moneyTransfers");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -47,6 +48,7 @@ app.use("/returns", returns);
 app.use("/analysis", analysis);
 app.use("/withdrawalRequests", withdrawalRequests);
 app.use("/Kasheer", Kasheer);
+app.use("/moneyTransfers", moneyTransfers);
 
 app.get("/", function (req, res) {
   res.send("Server is online");

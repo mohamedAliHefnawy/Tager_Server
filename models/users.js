@@ -40,7 +40,7 @@ const Users = new Schema({
         marketer: { type: String },
         money: { type: Number },
         moneyMarketer: { type: Number },
-        moneyDelivery: { type: Number },
+        moneyAdmin: { type: Number },
         notes: { type: String },
         date: { type: String },
         time: { type: String },
@@ -64,5 +64,6 @@ const Users = new Schema({
     type: String,
   },
 });
+
 const UsersModel = model("users", Users);
 module.exports = UsersModel;
