@@ -6,6 +6,7 @@ const bcyrbt = require("bcrypt");
 const saltRounds = 10;
 const MoneyTransfersModel = require("../models/moneyTransfers");
 const UsersModel = require("../models/users");
+const PaymentModel = require("../models/payment");
 
 route.get("/getMoneyTransfers", async (req, res) => {
   try {
@@ -44,30 +45,69 @@ route.post("/addMoneyTransfer", async (req, res) => {
   return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
 });
 
-route.post("/editkasheer", async (req, res) => {
+route.post("/acceptMoney", async (req, res) => {
   try {
     const {
-      id,
-      name,
-      phone,
-      imageURL,
-      password,
-      selectedStore,
-      selectedMoneySafe,
+      idOrder,
+      idMoney,
+      idMoneyTransfer,
+      marketer,
+      money,
+      gainMarketer,
+      gainAdmin,
+      nameAdmin,
+      selectedValuePayment,
     } = req.body;
 
-    const kasheer = await KasheerModel.findById(id);
-    const hashedPassword = await bcyrbt.hash(password, saltRounds);
+    console.log(idMoneyTransfer);
 
-    kasheer.name = name;
-    kasheer.phone = phone;
-    kasheer.image = imageURL;
-    kasheer.password = hashedPassword;
-    kasheer.moneysafe = selectedMoneySafe;
-    kasheer.store = selectedStore;
+    const nameMarketer = await UsersModel.findOne({ name: marketer });
+    const payment = await PaymentModel.findOne({ name: selectedValuePayment });
+    const moneyTransfer = await MoneyTransfersModel.findOne({
+      _id: idMoneyTransfer,
+    });
 
-    await kasheer.save();
-    return res.status(200).send("yes");
+    nameMarketer.money.push({
+      money: +gainMarketer,
+      notes: "",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
+    payment.money.push({
+      value: (+money - +gainAdmin).toString(),
+      notes: `أموال طلبية`,
+      person: nameAdmin,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
+    payment.money.push({
+      value: gainAdmin.toString(),
+      notes: `ربح طلبية`,
+      person: nameAdmin,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+    });
+
+    moneyTransfer.money.forEach(async (item, index) => {
+      if (item._id.toString() === idMoney) {
+        moneyTransfer.money.splice(index, 1);
+        await moneyTransfer.save();
+        return;
+      }
+
+      if (moneyTransfer.money.length === 0) {
+        await MoneyTransfersModel.findByIdAndDelete(idMoneyTransfer);
+      }
+    });
+
+    const save1 = await nameMarketer.save();
+    const save2 = await payment.save();
+
+    if (save1 && save2) {
+      return res.status(200).send("yes");
+    }
   } catch (error) {
     return res.status(500).send("no");
   }
