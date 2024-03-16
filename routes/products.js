@@ -212,13 +212,17 @@ route.post("/returnProductsInStore", async (req, res) => {
       const { amount, size, store } = inputValues[idProduct];
 
       const idProductsToDelete = Object.keys(inputValues);
+      const sizesToDelete = Object.values(inputValues).map(item => item.size);
 
       await UsersModel.updateOne(
         { _id: delivery },
         {
           $pull: {
             productsStore: {
-              idProduct: { $in: idProductsToDelete },
+              $and: [
+                { idProduct: { $in: idProductsToDelete } },
+                { size: { $in: sizesToDelete  } },
+              ],
             },
           },
         }
@@ -247,11 +251,6 @@ route.post("/returnProductsInStore", async (req, res) => {
           { $set: { size: newSize } }
         );
 
-        // await ProductsModel.findByIdAndUpdate(
-        //   idProduct,
-        //   { size: newSize },
-        //   { new: true }
-        // );
         return res.status(200).send("yes");
       } else {
         const product2 = await ProductsModel.findOne({
