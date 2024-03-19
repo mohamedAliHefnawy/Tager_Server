@@ -117,7 +117,7 @@ route.post("/convertProductsBetweenStores", async (req, res) => {
     for (const [productId, { size, store, amount }] of Object.entries(
       inputValues
     )) {
-      const storeSearch = await StoresModel.findOne({ gbs: store[0] });
+      const storeSearch = await StoresModel.findOne({ name: store[0] });
       if (storeSearch) {
         if (!storeSearch.products.includes(productId)) {
           storeSearch.products.push(productId);
