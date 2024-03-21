@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js",
+    "start": "pm2 start index.js",
+    "stop": "pm2 stop index.js",
+    "restart ": "pm2 restart index.js",
     "query": "node query.js"
   },
   "keywords": [],
@@ -32,6 +34,7 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg-promise": "^11.5.4",
+    "pm2": "^5.3.1",
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0"
   }
