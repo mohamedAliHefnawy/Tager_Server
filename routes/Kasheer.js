@@ -17,6 +17,38 @@ route.get("/getkasheer", async (req, res) => {
   }
 });
 
+route.get("/getMoneykasheer/:id", async (req, res) => {
+  const kasheerName = req.params.id;
+
+  try {
+    const kasheer = await KasheerModel.findOne({ name: kasheerName }).maxTimeMS(
+      20000
+    );
+    const data = kasheer.money;
+    const token = jwt.sign({ data }, config.secretKey);
+    res.json({ token, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+route.get("/getInvoicekasheer/:id", async (req, res) => {
+  const kasheerName = req.params.id;
+
+  try {
+    const kasheer = await KasheerModel.findOne({ name: kasheerName }).maxTimeMS(
+      20000
+    );
+    const data = kasheer.orders;
+    const token = jwt.sign({ data }, config.secretKey);
+    res.json({ token, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 route.post("/login", async (req, res) => {
   const { name, password } = req.body;
   try {
@@ -127,9 +159,8 @@ route.post("/orderInvoice", async (req, res) => {
     priceProducts,
   } = req.body;
 
-
   const kasheer = await KasheerModel.findOne({ name: pos });
-  
+
   const newOrder = {
     products: products.map((item) => ({
       Idproduct: item.idProduct,

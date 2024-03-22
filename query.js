@@ -1,11 +1,11 @@
 const db = require("./database");
 const mongoose = require("mongoose");
 
-const Model = require("./models/cart  ");
+const Model = require("./models/kasheer");
 
 mongoose
   .connect(
-    "mongodb+srv://elhefnawy:IooPQVqVpZD4nGB8@cluster0.wuy7w3u.mongodb.net/",
+    "mongodb+srv://elhefnawy:kSUUG9s9UuIiBcEo@cluster0.wuy7w3u.mongodb.net/",
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(async () => {
