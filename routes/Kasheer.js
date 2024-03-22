@@ -18,17 +18,16 @@ route.get("/getkasheer", async (req, res) => {
 });
 
 route.post("/addkasheer", async (req, res) => {
-  const { name, phone, imageURL, password, selectedStore, selectedMoneySafe } =
-    req.body;
-
-  console.log(
+  const {
     name,
     phone,
     imageURL,
     password,
     selectedStore,
-    selectedMoneySafe
-  );
+    selectedMoneySafe,
+    phoneCompany,
+    colorkasheer,
+  } = req.body;
 
   const kasheer = await KasheerModel.findOne({ name: name });
   if (kasheer) {
@@ -38,6 +37,8 @@ route.post("/addkasheer", async (req, res) => {
   const newkasheer = new KasheerModel({
     name: name,
     phone: phone,
+    phoneCompany: phoneCompany,
+    colorCompany: colorkasheer,
     password: hashedPassword,
     image: imageURL,
     store: selectedStore,
@@ -65,6 +66,8 @@ route.post("/editkasheer", async (req, res) => {
       password,
       selectedStore,
       selectedMoneySafe,
+      phoneCompany,
+      colorkasheer,
     } = req.body;
 
     const kasheer = await KasheerModel.findById(id);
@@ -72,6 +75,8 @@ route.post("/editkasheer", async (req, res) => {
 
     kasheer.name = name;
     kasheer.phone = phone;
+    kasheer.phoneCompany = phoneCompany;
+    kasheer.colorCompany = colorkasheer;
     kasheer.image = imageURL;
     kasheer.password = hashedPassword;
     kasheer.moneysafe = selectedMoneySafe;
@@ -100,6 +105,8 @@ route.post("/login", async (req, res) => {
       validity: Kasheer.validity,
       store: Kasheer.store,
       moneysafe: Kasheer.moneysafe,
+      colorCompany: Kasheer.colorCompany,
+      phoneCompany: Kasheer.phoneCompany,
       answer: "yes",
     });
   } catch (error) {

@@ -10,6 +10,12 @@ const Kasheer = new Schema({
   phone: {
     type: String,
   },
+  phoneCompany: {
+    type: String,
+  },
+  colorCompany: {
+    type: String,
+  },
   password: {
     type: String,
   },

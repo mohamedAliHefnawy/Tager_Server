@@ -72,7 +72,7 @@ route.post("/acceptMoney", async (req, res) => {
       notes: "",
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
-    });
+    })
 
     payment.money.push({
       value: (+money - +gainAdmin).toString(),

@@ -424,6 +424,9 @@ route.post("/editOrderSituation2", async (req, res) => {
     const nameMarketer = await UsersModel.findOne({ name: marketer });
 
     if (situationOrder === "تم التوصيل") {
+
+      console.log(orderMoney - deliveryPrice)
+      
       const newNotification = new NotificationsModel({
         person: delivery,
         marketer: marketer,
