@@ -26,12 +26,31 @@ const Kasheer = new Schema({
     type: String,
   },
   orders: {
-    type: [],
+    type: [
+      {
+        products: {
+          type: [
+            {
+              Idproduct: { type: String },
+              nameProduct: { type: String },
+              sizeProduct: { type: String },
+              amountProduct: { type: Number },
+              priceProduct: { type: Number },
+            },
+          ],
+        },
+        totalPrice: { type: Number },
+        deduct: { type: Number },
+        dateInvoice: { type: String },
+        timeInvoice: { type: String },
+      },
+    ],
   },
   money: {
     type: [
       {
-        idOrder: { type: String },
+        idInvoice: { type: String },
+        deduct: { type: Number },
         money: { type: Number },
         notes: { type: String },
         date: { type: String },

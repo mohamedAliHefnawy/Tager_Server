@@ -17,6 +17,32 @@ route.get("/getkasheer", async (req, res) => {
   }
 });
 
+route.post("/login", async (req, res) => {
+  const { name, password } = req.body;
+  try {
+    const Kasheer = await KasheerModel.findOne({ name });
+    if (!Kasheer) {
+      return res.send("notFoundKasheer");
+    }
+    const comparePassword = await bcyrbt.compare(password, Kasheer.password);
+    if (!comparePassword) {
+      return res.send("no");
+    }
+
+    return res.send({
+      validity: Kasheer.validity,
+      store: Kasheer.store,
+      moneysafe: Kasheer.moneysafe,
+      colorCompany: Kasheer.colorCompany,
+      phoneCompany: Kasheer.phoneCompany,
+      answer: "yes",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("error");
+  }
+});
+
 route.post("/addkasheer", async (req, res) => {
   const {
     name,
@@ -89,30 +115,53 @@ route.post("/editkasheer", async (req, res) => {
   }
 });
 
-route.post("/login", async (req, res) => {
-  const { name, password } = req.body;
-  try {
-    const Kasheer = await KasheerModel.findOne({ name });
-    if (!Kasheer) {
-      return res.send("notFoundKasheer");
-    }
-    const comparePassword = await bcyrbt.compare(password, Kasheer.password);
-    if (!comparePassword) {
-      return res.send("no");
-    }
+route.post("/orderInvoice", async (req, res) => {
+  const {
+    products,
+    size,
+    amount,
+    deduct,
+    store,
+    moneySafe,
+    pos,
+    priceProducts,
+  } = req.body;
 
-    return res.send({
-      validity: Kasheer.validity,
-      store: Kasheer.store,
-      moneysafe: Kasheer.moneysafe,
-      colorCompany: Kasheer.colorCompany,
-      phoneCompany: Kasheer.phoneCompany,
-      answer: "yes",
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send("error");
+
+  const kasheer = await KasheerModel.findOne({ name: pos });
+  
+  const newOrder = {
+    products: products.map((item) => ({
+      Idproduct: item.idProduct,
+      nameProduct: item.nameProduct,
+      sizeProduct: size[item.idProduct]?.anchorKey,
+      amountProduct: amount[item.idProduct],
+      priceProduct: item.priceProduct,
+    })),
+    totalPrice: priceProducts,
+    deduct: deduct,
+    dateInvoice: new Date().toLocaleDateString(),
+    timeInvoice: new Date().toLocaleTimeString(),
+  };
+
+  kasheer.orders.push(newOrder);
+
+  kasheer.money.push({
+    idInvoice: kasheer.orders[kasheer.orders.length - 1]._id,
+    deduct: deduct,
+    money: priceProducts,
+    notes: "لا يوجد ملاحظات",
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
+    acceptMoney: true,
+  });
+
+  const save = await kasheer.save();
+  if (save) {
+    return res.send("yes");
   }
+  // console.error(error);
+  // return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
 });
 
 module.exports = route;
