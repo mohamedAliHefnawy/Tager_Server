@@ -179,8 +179,8 @@ route.post("/orderInvoice", async (req, res) => {
 
   kasheer.money.push({
     idInvoice: kasheer.orders[kasheer.orders.length - 1]._id,
-    deduct: deduct,
-    money: priceProducts,
+    deduct: deduct || 0,
+    money: priceProducts || 0,
     notes: "لا يوجد ملاحظات",
     date: new Date().toLocaleDateString(),
     time: new Date().toLocaleTimeString(),

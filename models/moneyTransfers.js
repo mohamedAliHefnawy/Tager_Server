@@ -18,6 +18,7 @@ const MoneyTransfers = new Schema({
       {
         idOrder: { type: String },
         idMoney: { type: String },
+        idInvoice: { type: String },
         marketer: { type: String },
         money: { type: Number },
         moneyMarketer: { type: Number },
