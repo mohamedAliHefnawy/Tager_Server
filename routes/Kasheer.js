@@ -5,6 +5,7 @@ const route = express.Router();
 const bcyrbt = require("bcrypt");
 const saltRounds = 10;
 const KasheerModel = require("../models/kasheer");
+const ProductsModel = require("../models/products");
 
 route.get("/getkasheer", async (req, res) => {
   try {
@@ -175,24 +176,74 @@ route.post("/orderInvoice", async (req, res) => {
     timeInvoice: new Date().toLocaleTimeString(),
   };
 
-  kasheer.orders.push(newOrder);
+  for (data of products) {
+    const id = data.idProduct;
 
-  kasheer.money.push({
-    idInvoice: kasheer.orders[kasheer.orders.length - 1]._id,
+    const product = await ProductsModel.findById(id);
+    const product2 = await ProductsModel.findOne({
+      "products._id": id,
+    });
+
+    if (product) {
+      const newSize = product.size.map((sizeItem) => {
+        if (sizeItem.size === size[id]?.anchorKey) {
+          const newStore = sizeItem.store.map((storeItem) => {
+            if (storeItem.nameStore === store) {
+              storeItem.amount -= +amount[id];
+            }
+            return storeItem;
+          });
+          return { ...sizeItem, store: newStore };
+        }
+        return sizeItem;
+      });
+
+      await ProductsModel.updateOne({ _id: id }, { $set: { size: newSize } });
+    } else {
+      const productToUpdate = product2.products.filter(
+        (item) => item._id.toString() === id
+      );
+      const newSize = productToUpdate[0].size.map((sizeItem) => {
+        if (sizeItem.size === size[id]?.anchorKey) {
+          const newStore = sizeItem.store.map((storeItem) => {
+            if (storeItem.nameStore === store) {
+              storeItem.amount -= +amount[id];
+            }
+            return storeItem;
+          });
+          return { ...sizeItem, store: newStore };
+        }
+        return sizeItem;
+      });
+      await ProductsModel.updateOne(
+        { "products._id": id },
+        { $set: { "products.$.size": newSize } }
+      );
+    }
+  }
+
+  const newMoney = {
+    idInvoice:
+      kasheer.orders.length > 0 &&
+      kasheer.orders[kasheer.orders.length]._id,
     deduct: deduct || 0,
     money: priceProducts || 0,
     notes: "لا يوجد ملاحظات",
     date: new Date().toLocaleDateString(),
     time: new Date().toLocaleTimeString(),
     acceptMoney: true,
-  });
+  };
+
+  kasheer.orders.push(newOrder);
+  kasheer.money.push(newMoney);
 
   const save = await kasheer.save();
   if (save) {
-    return res.send("yes");
+    return res.json({
+      answer: "yes",
+      dataMoney: newMoney,
+    });
   }
-  // console.error(error);
-  // return res.status(500).send("حدث خطأ أثناء حفظ المستخدم");
 });
 
 module.exports = route;

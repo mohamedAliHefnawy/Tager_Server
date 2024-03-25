@@ -230,8 +230,6 @@ route.post("/returnProductsInStore", async (req, res) => {
 
       const product = await ProductsModel.findOne({ _id: idProduct });
 
-      console.log(inputValues[idProduct].amount);
-
       if (product) {
         const newSize = product.size.map((sizeItem) => {
           if (sizeItem.size === size) {
